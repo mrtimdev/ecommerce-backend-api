@@ -1,0 +1,40 @@
+{
+    "welcome": "Welcome",
+    "yes_iam_sure": "Yes, I'm sure",
+    "cancel": "Cancel",
+    "a_u_sure": "Are you sure?",
+    "delete": "Delete",
+    "lang": {
+        "en": "English",
+        "kh": "Khmer"
+    },
+    "item_not_found": "Item not found!",
+    "please_try_again": "Please try again!",
+    "actions": "Actions",
+    "view": "View",
+    "add": "Add",
+    "edit": "Edit",
+    "save": "Save",
+    "categories": "Categories",
+    "category": {
+        "text": "Category",
+        "name": "Category Name",
+        "add": "Add Category",
+        "edit": "Edit Category",
+        "update": "Update Category",
+        "delete": "Delete Category",
+        "deleted": "Category successfully deleted.",
+        "updated": "Category successfully updated.",
+        "select": "Select Categories",
+        "cannotdelete": "Category cannot be deleted."
+    },
+    "description": "Description",
+    "price": "Price",
+    "stock": "Stock",
+    "add_new": "Add New",
+    "name": "Name",
+    "inactive": "Inactive",
+    "active": "Active",
+    "status": "Status"
+}
+  
