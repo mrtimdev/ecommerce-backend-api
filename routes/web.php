@@ -5,7 +5,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Car\BrandController;
 use App\Http\Controllers\Car\CategoryController;
+use App\Http\Controllers\Car\ConditionController;
 
 
 Route::post('/admin/locale', [LocaleController::class, 'setLocale']);
@@ -26,7 +28,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 
-Route::prefix('admin')->name('cars.')->group(function () {
+Route::middleware('auth')->prefix('admin')->name('cars.')->group(function () {
     Route::get('/cars', function () {
         return Inertia::render('Admin/Cars/Index');
     })->name('list');
@@ -39,20 +41,17 @@ Route::prefix('admin')->name('cars.')->group(function () {
         Route::get('/categories/all', [CategoryController::class, 'getCategories'])->name('categories.list');
         Route::post('/categories/delete-selected', [CategoryController::class, 'deleteSelected'])->name('categories.destroy.selected');
         Route::resource('categories', CategoryController::class);
-        // Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         
-        // Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
-        // Route::get('/category/create', [CategoryController::class, 'create'])->name('categories.create');
-        // Route::get('/category/{carCategory}/show', [CategoryController::class, 'show'])->name('categories.show');
-        // Route::patch('/category/{carCategory}/show', [CategoryController::class, 'update'])->name('categories.update');
-        // Route::delete('/category/{carCategory}/delete', [CategoryController::class, 'destroy'])->name('categories.destroy');
         
-        Route::get('/conditions', function () {
-            return Inertia::render('Admin/Cars/Conditions');
-        })->name('conditions');
-        Route::get('/brands', function () {
-            return Inertia::render('Admin/Cars/Brands');
-        })->name('brands');
+        Route::get('/conditions/all', [ConditionController::class, 'getConditions'])->name('conditions.list');
+        Route::post('/conditions/delete-selected', [ConditionController::class, 'deleteSelected'])->name('conditions.destroy.selected');
+        Route::resource('conditions', ConditionController::class);
+
+        Route::get('/brands/all', [BrandController::class, 'getBrands'])->name('brands.list');
+        Route::post('/brands/delete-selected', [BrandController::class, 'deleteSelected'])->name('brands.destroy.selected');
+        Route::resource('brands', BrandController::class);
+
+    
         Route::get('/models', function () {
             return Inertia::render('Admin/Cars/Models');
         })->name('models');

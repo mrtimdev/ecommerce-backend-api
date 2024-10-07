@@ -17,7 +17,7 @@
 
       <div class="content-body p-5">
         <div class="relative">
-          <table id="car-category"
+          <table id="car-brand"
             class="table w-full text-sm text-left rtl:text-right">
             <thead class="text-center bg-white dark:bg-boxdark">
               <tr>
@@ -46,8 +46,8 @@ import CheckBox from '@/Components/Others/CheckBox.vue';
 import ActionButtons from '@/Components/Others/ActionButtons.vue';
 import AddOrEditForm from './AddOrEdit.vue';
 import DefaultLayout from '@/Layouts/DefaultLayout.vue';
-import { onMounted, reactive, h, createApp, ref } from 'vue';
-import useCarCategories from '@/composables/useCarCategories';
+import { onMounted, h, createApp, ref, reactive } from 'vue';
+import useCarBrands from '@/composables/useCarBrands';
 import { i18n } from '@/i18n';
 import { useEventBus } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
@@ -63,14 +63,13 @@ const { on: actionConfirmed } = useEventBus('action:confirmed');
 const { emit: openConfirmPopUp } = useEventBus('confirm:open');
 const { emit: closePopup } = useEventBus('popup:close');
 
-const { emit: emitOpenModal } = useEventBus('open:car:category:modal');
-const { on: onCloseModal } = useEventBus('close:car:category:modal');
-
+const { emit: emitOpenModal } = useEventBus('open:car:brand:modal');
+const { on: onCloseModal } = useEventBus('close:car:brand:modal');
 
 const breadcrumbs = reactive([
-  { label: 'Home', url: route('dashboard') },
-  {   label: t('cars'), url: '/cars' }, 
-  { label: t('categories'), url: null } 
+  {   label: 'Home', url: route('dashboard') },
+  {   label: t('cars'), url: '/cars' },
+  {   label: t('brands'), url: null } 
 ])
 
 const openModalFormAdd = (action = 'add', item = false) => {
@@ -94,14 +93,14 @@ onCloseModal(() => {
 
 onMounted(() => {
 
-  tableData.value = $('#car-category').DataTable({
+  tableData.value = $('#car-brand').DataTable({
     processing: true,
     serverSide: true,
     pageLength: 10,
     order: [[1, 'desc']],
     aLengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 100, "All"]],
     ajax: {
-      url: route('cars.categories.list'),
+      url: route('cars.brands.list'),
       type: 'GET',
     },
     columns: [
@@ -140,7 +139,6 @@ onMounted(() => {
         searchable: false,
         render: function (data, type, row, meta) {
           const status = data;
-          // return statusFormat(data === 1 ? 'active' : 'inactive');
           if (status === 'active') {
               return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded bg-success text-white">
                   ${status}
@@ -200,7 +198,7 @@ onMounted(() => {
     ],
   });
   actionConfirmed((item, action) => {
-    deleteCategory(item, action)
+    deleteBrand(item, action)
     closePopup()
     tableData.value.ajax.reload();
     selectedRows.value = [];
@@ -210,8 +208,8 @@ onMounted(() => {
 })
 
 const {
-  deleteCategory,
-} = useCarCategories()
+  deleteBrand,
+} = useCarBrands()
 const onHandleCheckAll = () => {
   checkAll.value = !checkAll.value;
   const checkboxes = document.querySelectorAll('.check-row');

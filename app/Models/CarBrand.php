@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CarCategory extends Model
+class CarBrand extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'status'];
@@ -13,5 +13,4 @@ class CarCategory extends Model
 
 
     protected $appends = [];
-
 }

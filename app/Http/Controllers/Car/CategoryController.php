@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Car;
 use Inertia\Inertia;
 use App\Models\CarCategory;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Redirect;
@@ -25,8 +26,8 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'status' => 'required|boolean',
+            'name' => 'required|string|max:255|unique:car_categories,name', // Ensure unique name
+            'status' => ['required', Rule::in(['active', 'inactive'])]
         ]);
 
         CarCategory::create($validated);
@@ -47,8 +48,13 @@ class CategoryController extends Controller
     public function update(Request $request, CarCategory $category)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'status' => 'required|boolean',
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('car_categories', 'name')->ignore($category->id), 
+            ],
+            'status' => ['required', Rule::in(['active', 'inactive'])],
         ]);
         $category->update($validated);
         return redirect()->route('cars.categories.index');

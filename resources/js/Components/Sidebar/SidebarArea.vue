@@ -29,8 +29,8 @@ const menuGroups = ref([
             children: [
                 { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Cars', routeName: 'cars.categories.index' },
                 { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Categories', routeName: 'cars.categories.index' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Conditions', routeName: 'cars.conditions' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Brands', routeName: 'cars.brands' },
+                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Conditions', routeName: 'cars.conditions.index' },
+                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Brands', routeName: 'cars.brands.index' },
                 { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Models', routeName: 'cars.models' },
                 { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Fuel Types', routeName: 'cars.fueltypes' },
                 { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Transmission Types', routeName: 'cars.transmissiontypes' },

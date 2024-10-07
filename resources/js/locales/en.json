@@ -2,6 +2,7 @@
     "welcome": "Welcome",
     "yes_iam_sure": "Yes, I'm sure",
     "cancel": "Cancel",
+    "close": "Close",
     "a_u_sure": "Are you sure?",
     "delete": "Delete",
     "lang": {
@@ -15,6 +16,8 @@
     "add": "Add",
     "edit": "Edit",
     "save": "Save",
+    "car": "Car",
+    "cars": "Cars",
     "categories": "Categories",
     "category": {
         "text": "Category",
@@ -27,6 +30,19 @@
         "updated": "Category successfully updated.",
         "select": "Select Categories",
         "cannotdelete": "Category cannot be deleted."
+    },
+    "conditions": "Conditions",
+    "condition": {
+        "text": "Condition",
+        "name": "Condition Name",
+        "add": "Add Condition",
+        "edit": "Edit Condition",
+        "update": "Update Condition",
+        "delete": "Delete Condition",
+        "deleted": "Condition successfully deleted.",
+        "updated": "Condition successfully updated.",
+        "select": "Select Categories",
+        "cannotdelete": "Condition cannot be deleted."
     },
     "description": "Description",
     "price": "Price",

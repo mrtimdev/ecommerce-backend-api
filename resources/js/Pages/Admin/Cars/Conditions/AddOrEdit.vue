@@ -5,14 +5,14 @@
             {{ t(action_label) }}
           </template>
           <template #body>
-            <form @submit.prevent=" categoryFormSubmit ">
+            <form @submit.prevent=" conditionFormSubmit ">
               <div class="grid gap-6 mb-6 md:grid-cols-2">
                 <div>
                   <label for="first_name" class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">{{
                     $t('name') }}</label>
                   <input type="text" ref="name" v-model=" form.name "
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500 dark:bg-tim-11"
-                    :placeholder=" $t('category.name') " />
+                    :placeholder=" $t('condition.name') " />
                   <InputError :message=" form.errors.name " class="mt-2" />
                 </div>
 
@@ -54,8 +54,8 @@
   const { t } = useI18n();
 
 
-  const { on: onOpenModal } = useEventBus('open:car:category:modal')
-  const { emit: emitCloseModal } = useEventBus('close:car:category:modal');
+  const { on: onOpenModal } = useEventBus('open:car:condition:modal')
+  const { emit: emitCloseModal } = useEventBus('close:car:condition:modal');
   const emit = defineEmits(['open', 'close', 'success'])
 
   const isVisible = ref(false)
@@ -99,9 +99,9 @@
       }
   })
 
-  const categoryFormSubmit = () => {
+  const conditionFormSubmit = () => {
     if(action_label.value === "edit") {
-      form.put(route('cars.categories.update', form.id), {
+      form.put(route('cars.conditions.update', form.id), {
         onSuccess: () => {
           nextTick(() => {
             form.reset()
@@ -115,7 +115,7 @@
         }
       })
     } else {
-      form.post(route('cars.categories.store'), {
+      form.post(route('cars.conditions.store'), {
         onSuccess: () => {
           nextTick(() => {
             form.reset('name')

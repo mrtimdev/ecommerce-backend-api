@@ -25,6 +25,7 @@ import { i18n } from './i18n';
 
 import ConfirmationModal from '@/Components/ConfirmationModal.vue'
 import Modal from '@/Components/Others/Modal.vue'
+import Breadcrumb from '@/Components/Others/Breadcrumb.vue'
 import CheckBox from '@/components/Others/CheckBox.vue';
 import ActionButtons from '@/components/Others/ActionButtons.vue';
 import InputError from '@/Components/Others/InputError.vue';
@@ -54,6 +55,7 @@ createInertiaApp({
           .use(i18n)
           .component('ConfirmationModal', ConfirmationModal)
           .component('Modal', Modal)
+          .component('Bc', Breadcrumb)
           .component('CheckBox', CheckBox)
           .component('ActionButtons', ActionButtons)
           .component('InputError', InputError)

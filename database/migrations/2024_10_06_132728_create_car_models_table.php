@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use App\Models\CarBrand;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -11,10 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('car_categories', function (Blueprint $table) {
+        Schema::create('car_models', function (Blueprint $table) {
             $table->id();
+            $table->foreignIdFor(CarBrand::class)->constrained()->onDelete('cascade'); 
             $table->string('name', 100)->unique();
             $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->engine = 'InnoDB';
         });
     }
 
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('car_categories');
+        Schema::dropIfExists('car_models');
     }
 };
