@@ -20,6 +20,10 @@ defineProps({
     status: {
         type: String,
     },
+    login_logo: {
+        type: String,
+        required: false,
+    }
 });
 
 const form = useForm({
@@ -47,7 +51,7 @@ const submit = () => {
 </style>
 
 <template>
-    <GuestLayout>
+    <GuestLayout :login_logo="login_logo">
         <Head title="Log in" />
         <canvas class="particles_background"></canvas>
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">

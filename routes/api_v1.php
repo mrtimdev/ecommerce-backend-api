@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Api\V1\Frontend\UserController;
+use App\Http\Controllers\Api\V1\Frontend\FrontendController;
 use App\Http\Controllers\Api\V1\Frontend\CarCategoryController;
 
 
@@ -28,6 +29,10 @@ Route::middleware(['auth:sanctum', 'auth.check'])->group(function () {
 
 Route::prefix('car')->group(function () {
     Route::get('/categories', [CarCategoryController::class, 'index']);
+});
+# home page routes
+Route::prefix('home')->group(function () {
+    Route::get('/sliders', [FrontendController::class, 'getHomePageSliders']);
 });
 
 

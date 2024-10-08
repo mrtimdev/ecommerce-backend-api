@@ -41,7 +41,7 @@ defineProps({
       v-if="dropdownOpen"
       class="absolute z-10 -right-0 mt-2 flex w-full flex-col rounded-sm border border-gray-200 bg-white shadow-default dark:border-gray-300 sm:right-0 sm:w-40"
     >
-      <div class="py-1">
+      <div>
         <slot name="action-buttons"></slot>
       </div>
     </div>

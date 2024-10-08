@@ -17,16 +17,18 @@
 
       <div class="content-body p-5">
         <div class="relative">
-          <table id="car-condition"
+          <table id="slider"
             class="table w-full text-sm text-left rtl:text-right">
             <thead class="text-center bg-white dark:bg-boxdark">
               <tr>
-                <th class="w-[5%]">
+                <th class="w-[3%]">
                   <input type="checkbox"  
                     :checked="checkAll" @change="onHandleCheckAll"
                     class="check-all-row w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
                 </th>
-                <th class="w-[70%]">{{ $t('name') }}</th>
+                <th class="w-[5%]">{{ $t('image') }}</th>
+                <th class="w-[25%]">{{ $t('title') }}</th>
+                <th class="w-[30%]">{{ $t('description') }}</th>
                 <th class="w-[10%]">{{ $t('status') }}</th>
                 <th class="w-[10%] action-col">{{ $t('actions') }}</th>
               </tr>
@@ -44,15 +46,15 @@
 
 import CheckBox from '@/Components/Others/CheckBox.vue';
 import ActionButtons from '@/Components/Others/ActionButtons.vue';
-import AddOrEditForm from './AddOrEdit.vue';
+import AddOrEditForm from '../Sliders/AddOrEdit.vue';
 import DefaultLayout from '@/Layouts/DefaultLayout.vue';
 import { onMounted, h, createApp, ref, reactive } from 'vue';
-import useCarConditions from '@/composables/useCarConditions';
+import useFrontend from '@/composables/useFrontend';
 import { i18n } from '@/i18n';
 import { useEventBus } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import useHelper from '@/composables/useHelper'
-const { statusFormat } = useHelper()
+const { statusFormat, imageFormat } = useHelper()
 
 const { t } = useI18n();
 const tableData = ref(false);
@@ -63,13 +65,14 @@ const { on: actionConfirmed } = useEventBus('action:confirmed');
 const { emit: openConfirmPopUp } = useEventBus('confirm:open');
 const { emit: closePopup } = useEventBus('popup:close');
 
-const { emit: emitOpenModal } = useEventBus('open:car:condition:modal');
-const { on: onCloseModal } = useEventBus('close:car:condition:modal');
+const { emit: emitOpenModal } = useEventBus('open:slider:modal');
+const { on: onCloseModal } = useEventBus('close:slider:modal');
 
 const breadcrumbs = reactive([
   {   label: 'Home', url: route('dashboard') },
-  {   label: t('cars'), url: '/cars' },
-  {   label: t('conditions'), url: null } 
+  {   label: t('admin'), url: null },
+  {   label: t('frontend'), url: null } ,
+  {   label: t('homepage'), url: null } ,
 ])
 
 const openModalFormAdd = (action = 'add', item = false) => {
@@ -93,14 +96,14 @@ onCloseModal(() => {
 
 onMounted(() => {
 
-  tableData.value = $('#car-condition').DataTable({
+  tableData.value = $('#slider').DataTable({
     processing: true,
     serverSide: true,
     pageLength: 10,
     order: [[1, 'desc']],
     aLengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, 100, "All"]],
     ajax: {
-      url: route('cars.conditions.list'),
+      url: route('frontend.homepage.sliders.list'),
       type: 'GET',
     },
     columns: [
@@ -132,13 +135,23 @@ onMounted(() => {
           return checkBoxHtml;
         },
       },
-      { data: 'name', name: 'name' },
-      { data: 'status', 
+      { data: 'image_path', name: 'image_path', 
+        orderable: false, searchable: false,
+        className: 'action-col text-center',
+        render: function (data, type, row, meta) {
+          return imageFormat(data)
+          return `<img src="/storage/${data}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />`;
+        }
+      },
+      { data: 'title', name: 'title' },
+      { data: 'description', name: 'description' },
+      { data: 'is_active', 
         className: 'action-col',
-        sorderable: false,
+        orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          return statusFormat(data);
+          const status = data == 1 ? 'active' : 'inactive';
+          return statusFormat(status)
         }
       },
       {
@@ -185,7 +198,7 @@ onMounted(() => {
     ],
   });
   actionConfirmed((item, action) => {
-    deleteCondition(item, action)
+    deleteSlider(item, action)
     closePopup()
     tableData.value.ajax.reload();
     selectedRows.value = [];
@@ -195,8 +208,8 @@ onMounted(() => {
 })
 
 const {
-  deleteCondition,
-} = useCarConditions()
+  deleteSlider,
+} = useFrontend()
 const onHandleCheckAll = () => {
   checkAll.value = !checkAll.value;
   const checkboxes = document.querySelectorAll('.check-row');

@@ -2,7 +2,6 @@
 import { useSidebarStore } from '@/stores/sidebar'
 import DarkModeSwitcher from './DarkModeSwitcher.vue'
 import LangSwitcher from './LangSwitcher.vue'
-import DropdownMessage from './DropdownMessage.vue'
 import DropdownNotification from './DropdownNotification.vue'
 import DropdownUser from './DropdownUser.vue'
 import { Head, Link } from '@inertiajs/vue3';
@@ -13,9 +12,9 @@ const sidebarStore = useSidebarStore()
 
 <template>
   <header
-    class="sticky top-0 z-40 flex w-full drop-shadow-6 dark:bg-[#1a2035] bg-[#f9fbfd] dark:drop-shadow-none"
+    class="sticky top-0 z-40 flex w-full dark:bg-[#1a2035] bg-[#f9fbfd]"
   >
-    <div class="flex flex-grow items-center justify-end py-4 px-4 shadow-2 md:px-6 2xl:px-11">
+    <div class="flex flex-grow items-center justify-end py-2 px-4 shadow-2 md:px-6 2xl:px-11">
       <div class="flex items-center gap-2 sm:gap-4 lg:hidden">
         <!-- Hamburger Toggle BTN -->
         <button
@@ -71,13 +70,7 @@ const sidebarStore = useSidebarStore()
             <LangSwitcher />
           </li>
 
-          <!-- Notification Menu Area -->
           <DropdownNotification />
-          <!-- Notification Menu Area -->
-
-          <!-- Chat Notification Area -->
-          <DropdownMessage />
-          <!-- Chat Notification Area -->
         </ul>
 
         <!-- User Area -->

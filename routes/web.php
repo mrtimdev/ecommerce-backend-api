@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Car\BrandController;
 use App\Http\Controllers\Car\CategoryController;
 use App\Http\Controllers\Car\ConditionController;
@@ -24,6 +26,7 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
+    // return Inertia::render('Dashboard');
     return Inertia::render('Admin/Dashboard/Index');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -62,10 +65,34 @@ Route::middleware('auth')->prefix('admin')->name('cars.')->group(function () {
             return Inertia::render('Admin/Cars/Transmissiontypes');
         })->name('transmissiontypes');
     });
+
+
+    
 });
 
+# settings routes
+Route::middleware('auth')->prefix('admin')->name('settings.')->group(function () {
+    Route::get('/settings', [SettingController::class, 'index'])->name('index');
+    Route::post('/settings/upload', [SettingController::class, 'upload'])->name('upload');
+});
 
-Route::middleware('auth')->group(function () {
+# frontend routes
+Route::middleware('auth')->prefix('admin')->group(function () {
+    Route::middleware('auth')->prefix('frontend')->name('frontend.')->group(function () {
+        Route::middleware('auth')->prefix('homepage')->name('homepage.')->group(function () {
+            Route::get('/sliders/all', [FrontendController::class, 'getHomePageSliders'])->name('sliders.list');
+            Route::get('/sliders', [FrontendController::class, 'index'])->name('sliders.index');
+            Route::post('/sliders', [FrontendController::class, 'store'])->name('sliders.store');
+            Route::post('/sliders/{slider}', [FrontendController::class, 'update'])->name('sliders.update');
+            Route::delete('/sliders/{slider}', [FrontendController::class, 'destroy'])->name('sliders.destroy');
+            Route::get('/sliders/d', [FrontendController::class, 'deleteSelected'])->name('sliders.destroy.selected');
+
+            
+        });
+    });
+});
+
+Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

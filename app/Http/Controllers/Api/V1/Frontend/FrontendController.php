@@ -2,33 +2,35 @@
 
 namespace App\Http\Controllers\Api\V1\Frontend;
 
-use App\Models\CarCategory;
 use Illuminate\Http\Request;
+use App\Models\HomePageSlider;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Frontend\Car\CategoryCollection;
+use App\Http\Resources\Frontend\HomePage\SliderCollection;
 
-class CarCategoryController extends Controller
+class FrontendController extends Controller
 {
-    public function index(Request $request) {
+    public function getHomePageSliders(Request $request)
+    {
         $sortField = $request->input('sort_field', 'id');
         $sortOrder = $request->input('sort_order', 'asc');
 
-        if (!in_array($sortField, ['id', 'name', 'is_active'])) {
-            return response()->json(['error' => 'Invalid sort field, available fields: [id, name, is_active]'], 400);
+        if (!in_array($sortField, ['id', 'title', 'is_active'])) {
+            return response()->json(['error' => 'Invalid sort field, available fields: [id, title, is_active]'], 400);
         }
 
         if (!in_array($sortOrder, ['asc', 'desc'])) {
             return response()->json(['error' => 'Invalid sort order'], 400);
         }
         $isActive = $request->input('is_active');
-        $query = CarCategory::query();
+        $query = HomePageSlider::query();
 
         if ($isActive !== null) {
             $query->where('is_active', $isActive);
         }
 
-        $categories = $query->orderBy($sortField, $sortOrder)->get();
+        $sliders = $query->orderBy($sortField, $sortOrder)->get();
 
-        return new CategoryCollection($categories);
+        return new SliderCollection($sliders);
     }
+
 }

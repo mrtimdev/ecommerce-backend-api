@@ -6,7 +6,7 @@ const store = useMainStore()
 
 <template>
   <label
-    :class="{ 'bg-primary': store.darkMode, 'bg-stroke': !store.darkMode }"
+    :class="{ 'bg-purple-700': store.darkMode, 'bg-stroke': !store.darkMode }"
     class="relative m-0 block h-7.5 w-14 rounded-full"
     @click="store.toggleDarkMode"
   >

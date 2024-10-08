@@ -24,19 +24,19 @@ const handleItemClick = () => {
   <li>
     <a
         v-if="item.children"
-        class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+        class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-gray-500 hover:text-gray-200 dark:text-gray-400 hover:dark:text-gray-200 hover:bg-gray-600 dark:hover:bg-gray-600"
         @click.prevent="handleItemClick"
         :class="{
-            'bg-graydark dark:bg-meta-4': sidebarStore.page === item.label
+            'bg-gray-600 bg-active': sidebarStore.page === item.label
         }"
     >
-        <span v-html="item.icon"></span>
+        <span class="menu-icon" v-html="item.icon"></span>
 
-        {{ item.label }}
+        <span class="menu-label">{{ item.label }}</span>
 
         <svg
             v-if="item.children"
-            class="absolute right-4 top-1/2 -translate-y-1/2 fill-current"
+            class="menu-icon absolute right-4 top-1/2 -translate-y-1/2 fill-current"
             :class="{ 'rotate-180': sidebarStore.page === item.label }"
             width="20"
             height="20"
@@ -55,14 +55,14 @@ const handleItemClick = () => {
     <Link
         v-else
         :href="route(item.routeName)"
-        class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4"
+        class="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-gray-500 hover:text-gray-200 dark:text-gray-400 hover:dark:text-gray-200 hover:bg-gray-600 dark:hover:bg-gray-600"
         @click.prevent="handleItemClick"
         :class="{
-            'bg-graydark dark:bg-meta-4': sidebarStore.page === item.label
+            'bg-gray-600 bg-active': sidebarStore.page === item.label
         }"
     >
-        <span v-html="item.icon"></span>
-        {{ item.label }}
+        <span class="menu-icon" v-html="item.icon"></span>
+        <span class="menu-label">{{ item.label }}</span>
     </Link>
 
     <!-- Dropdown Menu Start -->
@@ -76,3 +76,14 @@ const handleItemClick = () => {
     </div>
   </li>
 </template>
+
+<style lang="scss" scoped>
+    .bg-active
+    {
+        .menu-label,
+        .menu-icon
+        {
+            color: rgb(156 163 175) !important;
+        }
+    }
+</style>

@@ -21,7 +21,7 @@ onClickOutside(target, () => {
     <div>
       <button
         type="button"
-        class="inline-flex justify-center items-center w-full rounded-md bg-gray dark:bg-meta-4 shadow-sm px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+        class="inline-flex justify-center items-center w-full rounded-md bg-stroke hover:bg-gray-200 dark:bg-meta-4 shadow-sm h-8.5 px-1 text-sm font-medium text-gray-700 dark:text-white focus:outline-none"
         @click.prevent="(dropdownOpen = !dropdownOpen)"
       >
         <img v-if="store.locale === 'en'" src=".././../../images/flags/en.png" class="mr-2 h-5 w-5" />
@@ -38,16 +38,16 @@ onClickOutside(target, () => {
       v-if="dropdownOpen"
       class="absolute -right-0 mt-2 flex w-full flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-40"
     >
-      <div class="py-1">
+      <div>
         <button
           @click="store.setLanguage('en')"
-          class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left hover:bg-gray-2 dark:hover:bg-meta-4"
+          class="block px-4 py-2 text-sm text-gray-700 dark:text-white hover:bg-gray-100 w-full text-left dark:hover:bg-meta-4"
         >
           <img src=".././../../images/flags/en.png" class="inline h-4 w-4 mr-2" /> English
         </button>
         <button
           @click="store.setLanguage('kh')"
-          class="border-t border-stroke dark:border-strokedark block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left hover:bg-gray-2 dark:hover:bg-meta-4"
+          class="border-t border-stroke dark:border-strokedark block px-4 py-2 text-sm text-gray-700 dark:text-white w-full text-left hover:bg-gray-2 dark:hover:bg-meta-4"
         >
           <img src=".././../../images/flags/kh.png" class="inline h-4 w-4 mr-2" /> Khmer
         </button>

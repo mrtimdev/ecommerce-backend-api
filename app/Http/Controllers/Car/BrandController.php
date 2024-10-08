@@ -64,7 +64,7 @@ class BrandController extends Controller
         return redirect()->route('cars.brands.index');
     }
     public function deleteSelected(Request $request)
-     {
+    {  
         $ids = $request->input('ids');
         CarBrand::whereIn('id', $ids)->delete();  
         return redirect()->route('cars.brands.index');

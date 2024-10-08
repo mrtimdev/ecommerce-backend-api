@@ -44,6 +44,8 @@
         "select": "Select Categories",
         "cannotdelete": "Condition cannot be deleted."
     },
+    "image": "Image",
+    "title": "Title",
     "description": "Description",
     "price": "Price",
     "stock": "Stock",

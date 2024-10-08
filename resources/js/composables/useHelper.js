@@ -16,9 +16,19 @@ export default function useHelper() {
                 ${status}
             </div>`
         }
-    };
+    }
+
+    const imageFormat = (src) => {
+
+        return `
+            <div class="image flex items-center justify-center">
+                <img src="/storage/${src}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
+            </div>
+        `
+    }
 
     return {
-        statusFormat
+        statusFormat,
+        imageFormat
     }
 }

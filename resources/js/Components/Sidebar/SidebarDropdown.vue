@@ -20,9 +20,9 @@ const handleItemClick = (index) => {
             <Link
             :href="route(childItem.routeName)"
             @click="handleItemClick(index)"
-            class="group relative flex items-center gap-2.5 rounded-md px-4 font-normal text-bodydark2 duration-300 ease-in-out hover:text-white"
+            class="group relative flex items-center gap-2.5 rounded-md px-4 font-normal duration-300 ease-in-out text-gray-500 hover:text-purple-700 hover:font-extrabold dark:text-gray-400 hover:dark:text-gray-200"
             :class="{
-                '!text-purple-600': childItem.label === sidebarStore.selected
+                '!text-purple-600 font-extrabold': childItem.label === sidebarStore.selected
             }"
             >
             <span v-html="childItem.icon"></span>
