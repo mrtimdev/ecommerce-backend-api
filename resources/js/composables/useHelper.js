@@ -19,16 +19,24 @@ export default function useHelper() {
     }
 
     const imageFormat = (src) => {
-
+        const image_path = src ? `/storage/${src}` : `/assets/images/no-image.jpg`
         return `
             <div class="image flex items-center justify-center">
-                <img src="/storage/${src}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
+                <img src="${image_path}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
             </div>
         `
     }
 
+    const generateSlug = (value) => {
+        return value
+          .toLowerCase() // Convert to lowercase
+          .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with hyphens
+          .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+    }
+
     return {
         statusFormat,
-        imageFormat
+        imageFormat,
+        generateSlug
     }
 }

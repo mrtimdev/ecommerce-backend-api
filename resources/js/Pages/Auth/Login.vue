@@ -11,9 +11,9 @@ import { useMainStore } from '@/stores/main'
 const mainStore = useMainStore()
 
 onMounted(() => {
-    mainStore.initParticle()
+    // mainStore.initParticle()
 })
-defineProps({
+const props = defineProps({
     canResetPassword: {
         type: Boolean,
     },
@@ -53,7 +53,7 @@ const submit = () => {
 <template>
     <GuestLayout :login_logo="login_logo">
         <Head title="Log in" />
-        <canvas class="particles_background"></canvas>
+        <!-- <canvas class="particles_background"></canvas> -->
         <div v-if="status" class="mb-4 font-medium text-sm text-green-600">
             {{ status }}
         </div>

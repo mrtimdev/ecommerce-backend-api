@@ -1,6 +1,6 @@
 <script setup>
     import { Link } from '@inertiajs/vue3';
-    defineProps({
+    const props = defineProps({
         login_logo: {
             type: String,
             required: false,

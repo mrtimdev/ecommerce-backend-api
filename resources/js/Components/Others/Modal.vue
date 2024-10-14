@@ -1,7 +1,7 @@
 <script setup>
     import { watch, ref, computed, onMounted, onBeforeUnmount } from 'vue'
     import { onClickOutside } from '@vueuse/core'; 
-    import { bus } from '@/eventBus'
+    import { events } from '@/events'
 
     const props = defineProps({
         show: Boolean,
@@ -50,27 +50,25 @@
             console.log('Modal is opened')
         }
     })
+    
+
 
     onMounted(() => {
         window.addEventListener('keydown', handleEscape);
     });
 
     onBeforeUnmount(() => {
+        events.all.clear()
         window.removeEventListener('keydown', handleEscape);
     });
     
     
     onClickOutside(target, () => {
-        emit('close');
-        emit('update:show', false); 
-        console.log('Modal is opened', props.show)
-        bus.emit('close')
+      emit('close')
     })
     const handleEscape = (e) => {
         if (e.key === 'Escape') {
-            emit('close');
-            emit('update:show', false); 
-            bus.emit('close')
+            emit('close')
         }
     };
 
@@ -95,9 +93,9 @@
             <div ref="target" :class="modalClass" class="fixed top-0 bottom-0 left-0 right-0 z-10 m-auto w-full bg-white shadow-xl dark:bg-dark-foreground md:relative md:rounded-xl">
                 <div class="w-full relative max-h-full flex items-center justify-center">
                     <!-- Modal content -->
-                    <div class="w-full relative bg-white rounded-lg border border-stroke dark:border-strokedark dark:bg-meta-4">
+                    <div class="w-full relative bg-white rounded-lg border border-gray-300 dark:border-strokedark dark:bg-meta-4">
                         <!-- Modal header -->
-                        <div class="flex items-center justify-between p-4 md:p-5 border-b border-stroke rounded-t">
+                        <div class="flex items-center justify-between p-4 md:p-5 border-b border-gray-300 rounded-t">
                             <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
                                 <slot name="title">Title</slot>
                             </h3>
@@ -109,7 +107,7 @@
                             </button>
                         </div>
                         <!-- Modal body -->
-                        <div class="modal-body p-4 md:p-5 space-y-4">
+                        <div class="modal-body space-y-4">
                             <slot name="body">
                                 <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
                                     With less than a month to go before the European Union enacts new consumer privacy laws for its citizens, companies around the world are updating their terms of service agreements to comply.

@@ -1,34 +1,31 @@
 <template>
-        <input type="checkbox" :checked=" modelValue " @change="onChangeHandler"
-            class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+        <input type="checkbox"
+        :value="value"
+        v-model="proxyChecked"
+            class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-boxdark-1 dark:border-gray-600" />
 </template>
-
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 
-// Props
+const emit = defineEmits(['update:checked']);
+
 const props = defineProps({
-    disabled: {
-        type: Boolean,
-        default: false
+    checked: {
+        type: [Array, Boolean],
+        required: true,
     },
-    modelValue: {
-        type: Boolean,
-        required: true
-    }
-
+    value: {
+        default: null,
+    },
 });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+const proxyChecked = computed({
+    get() {
+        return props.checked;
+    },
 
-const onChangeHandler = (event) => {
-  const isCheck = event.target.checked;
-  const value = event.target.value;
-  emit('update:modelValue', isCheck);  
-  console.log({isCheck, value}); 
-};
+    set(val) {
+        emit('update:checked', val);
+    },
+});
 </script>
-
-<style scoped>
-
-</style>

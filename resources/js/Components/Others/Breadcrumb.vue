@@ -23,6 +23,7 @@
           </template>
           <template v-else>
             <span
+              :class="{'!text-purple-600 md:ms-2': crumb.is_active}"
               class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400"
               >{{ crumb.label }}</span
             >
@@ -34,7 +35,6 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
 import { Link } from "@inertiajs/vue3";
 
 const props = defineProps({

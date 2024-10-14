@@ -8,7 +8,7 @@
 </template>
 
 <script>
-    defineProps({
+    const props = defineProps({
         scrollContent: {
             type: Boolean,
             default: false,

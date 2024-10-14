@@ -2,7 +2,7 @@
     <transition name="popup" appear appear-class="bounce">
       <div
         
-        v-if="isVisibleWrapper"
+        v-if="isVisible"
         :class="{'is-mobile-view popup-wrapper p-2': isMobile(), 'p-10': !isMobile()}"
         class="custom-backdrop-blur popup fixed top-0 left-0 right-0 bottom-0 z-50 grid h-full overflow-y-auto lg:absolute"
       >
@@ -18,56 +18,49 @@
   
 <script setup>
     import { ref, onMounted } from 'vue';
-    import { useEventBus, onClickOutside } from '@vueuse/core'; 
+    import { onClickOutside } from '@vueuse/core'; 
+    import { events } from '@/events'; 
+
     
     const props = defineProps({
         name: String,
-        backdrop_click: Boolean,
+        backdropClick: {
+          type: Boolean,
+          default: false
+        },
     });
     
     const target = ref(null)
-    const isVisibleWrapper = ref(false);
-    const events = useEventBus();
-    
-    const beforeEnter = (el) => {
-        el.style.opacity = 0;
-        el.style.transformOrigin = 'left';
-    };
+    const isVisible = ref(false);
     
     onClickOutside(target, () => {
-      isVisibleWrapper.value = false
+      if(props.backdropClick) {
+        isVisible.value = true
+      } else {
+        isVisible.value = false
+      }
+      
     })
     
     const isMobile = () => {
         return window.innerWidth <= 960;
     };
 
-    const { on: onPopupOpen } = useEventBus('popup:open');
-    const { on: onPopupClose } = useEventBus('popup:close');
-    const { on: onConfirmOpen } = useEventBus('confirm:open');
     
     
     onMounted(() => {
-        // Open called popup
-        events.on('popup:open', ({ name }) => {
-            isVisibleWrapper.value = props.name === name;
+        events.on('popup:open', (data) => {
+            isVisible.value = true;
         });
-    
-        onConfirmOpen((payload) => {
-          console.log('Confirm popup opened:', payload);
-          isVisibleWrapper.value = true;
+        
+        events.on('confirm:open', (data) => {
+          isVisible.value = true;
         });
-
-        onPopupOpen((name) => {
-          console.log('popup opened:', name);
-          isVisibleWrapper.value = props.name === name;
+        events.on('confirm:cancel', (data) => {
+          isVisible.value = false;
         });
 
-        onPopupClose(() => {
-          console.log('popup closed');
-          isVisibleWrapper.value = false;
-        });
-        events.on('popup:close', () => (isVisibleWrapper.value = false));
+        events.on('popup:close', () => (isVisible.value = false));
     });
 </script>
   

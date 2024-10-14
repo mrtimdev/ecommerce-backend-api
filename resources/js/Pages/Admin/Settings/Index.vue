@@ -42,7 +42,7 @@ const breadcrumbs = reactive([
     {   label: t('Home Page'), url: null } ,
 ])
 
-defineProps({
+const props = defineProps({
     login_logo: {
         type: String,
         required: true,

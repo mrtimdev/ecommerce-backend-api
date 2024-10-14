@@ -1,5 +1,5 @@
 <script setup>
-defineProps({
+const props = defineProps({
     type: {
         type: String,
         default: 'button',

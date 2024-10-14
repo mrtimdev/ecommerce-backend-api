@@ -1,59 +1,64 @@
-<script setup >
+<script setup>
 import { useSidebarStore } from '@/stores/sidebar'
 import { onClickOutside } from '@vueuse/core'
 import { ref } from 'vue'
 import SidebarItem from './SidebarItem.vue'
+import { Link, usePage } from '@inertiajs/vue3'
 
-import { Link } from '@inertiajs/vue3'
 
 const target = ref(null)
-
 const sidebarStore = useSidebarStore()
+const page = usePage() // Get the current page context
 
 onClickOutside(target, () => {
   sidebarStore.isSidebarOpen = false
 })
 
+
+
 const menuGroups = ref([
-    {
-        name: 'MENU',
-        menuItems: [
-        {
-            icon: `<i class="fa fa-home"></i>`,
-            label: 'dashboard',
-            routeName: 'dashboard'
-        },
-        {
-            icon: `<i class="fa-solid fa-list"></i>`,
-            label: 'Cars',
-            children: [
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Cars', routeName: 'cars.categories.index' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Categories', routeName: 'cars.categories.index' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Conditions', routeName: 'cars.conditions.index' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Brands', routeName: 'cars.brands.index' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Models', routeName: 'cars.models' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Fuel Types', routeName: 'cars.fueltypes' },
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Transmission Types', routeName: 'cars.transmissiontypes' },
-            ]
-        },
-        {
-          icon: `<i class="fa-solid fa-list"></i>`,
-          label: 'Frontend',
-          children: [
-            { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Home Page', routeName: 'frontend.homepage.sliders.index' },
-          ]
-        },
-
-        {
-            icon: `<i class="fa-solid fa-list"></i>`,
-            label: 'Settings',
-            children: [
-                { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Settings', routeName: 'settings.index' },
-            ]
-        },
-
+  {
+    name: 'MENU',
+    menuItems: [
+      {
+        icon: `<i class="fa fa-home"></i>`,
+        label: 'dashboard',
+        routeName: 'dashboard'
+      },
+      {
+        icon: `<i class="fa-solid fa-list"></i>`,
+        label: 'Cars Specifications',
+        children: [
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Categories', routeName: 'categories.index' },
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Conditions', routeName: 'conditions.index' },
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Brands', routeName: 'brands.index' },
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Models', routeName: 'models.index' },
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Fuel Types', routeName: 'fuelTypes.index' },
         ]
-    },
+      },
+      {
+        icon: `<i class="fa-solid fa-truck"></i>`,
+        label: 'Cars',
+        children: [
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Cars', routeName: 'cars.index' },
+        ]
+      },
+      {
+        icon: `<i class="fa-solid fa-list"></i>`,
+        label: 'Frontend',
+        children: [
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Home Page', routeName: 'frontend.homepage.sliders.index' },
+        ]
+      },
+      {
+        icon: `<i class="fa-solid fa-list"></i>`,
+        label: 'Settings',
+        children: [
+          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Settings', routeName: 'settings.index' },
+        ]
+      },
+    ]
+  },
 ])
 </script>
 
@@ -71,7 +76,7 @@ const menuGroups = ref([
       <div class="flex flex-grow items-center justify-between py-4 px-4 md:px-6 2xl:px-11">
         <Link href="/dashboard">
           <i class="fa fa-home"></i>
-          {{ $t('TIM Dev') }}
+          TIM Dev
         </Link>
   
         <button class="block lg:hidden" @click="sidebarStore.isSidebarOpen = false">
@@ -97,21 +102,19 @@ const menuGroups = ref([
       <!-- Sidebar Menu -->
       <nav class="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
         <template v-for="menuGroup in menuGroups">
-            <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">{{ menuGroup.name }}</h3>
-
-            <ul class="mb-6 flex flex-col gap-1.5">
-              <SidebarItem
-                v-for="(menuItem, index) in menuGroup.menuItems"
-                :item="menuItem"
-                :key="index"
-                :index="index"
-              />
-            </ul>
+          <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">{{ menuGroup.name }}</h3>
+          <ul class="mb-6 flex flex-col gap-1.5">
+            <SidebarItem
+              v-for="(menuItem, index) in menuGroup.menuItems"
+              :item="menuItem"
+              :key="index"
+              :index="index"
+              :currentRoute="page.url" 
+            />
+          </ul>
         </template>
       </nav>
       <!-- Sidebar Menu -->
-
-      
     </div>
   </aside>
 </template>

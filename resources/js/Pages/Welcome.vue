@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     canLogin: {
         type: Boolean,
     },

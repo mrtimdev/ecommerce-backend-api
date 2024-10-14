@@ -62,7 +62,7 @@
       <ul class="flex flex-col gap-5 border-b border-stroke px-2 py-2 dark:border-strokedark">
         <li>
           <Link :href="route('profile.edit')"
-            as="button"
+            
             class="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-purple-700 lg:text-base"
           >
             <svg

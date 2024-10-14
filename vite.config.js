@@ -20,4 +20,18 @@ export default defineConfig({
             },
         }),
     ],
+    css: {
+        preprocessorOptions: {
+            scss: {
+                api: 'modern',
+                silenceDeprecations: ["legacy-js-api"],
+                sassOptions: {
+                    quietDeps: false
+                }
+            },
+            sass: {
+                silenceDeprecations: ['slash-div'],
+            },
+        },
+    },
 });
