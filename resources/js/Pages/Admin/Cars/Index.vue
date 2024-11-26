@@ -1,6 +1,6 @@
 <template>
   <DefaultLayout>
-    <Head :title="$t('categories')" />
+    <Head :title="$t('cars.listing')" />
     <div class="container">
       <div
         class="content-header rounded-tl-md rounded-tr-md p-5 border-b bg-white dark:border-gray-700 dark:bg-boxdark-1 flex flex-grow items-center justify-between"
@@ -25,9 +25,9 @@
         </div>
       </div>
 
-      <div class="content-body p-5">
+      <div class="content-body p-5 overflow-x-scroll">
         <div class="relative">
-          <table id="car-category" class="table w-full text-sm text-left rtl:text-right">
+          <table id="cars" class="table w-full text-sm text-left rtl:text-right">
             <thead class="text-center bg-white dark:bg-boxdark">
               <tr>
                 <th class="w-[3%]">
@@ -39,11 +39,21 @@
                   />
                 </th>
                 <th class="w-[5%]">{{ $t("image") }}</th>
-                <th class="w-[10%]">{{ $t("code") }}</th>
+                <th class="w-[5%]">{{ $t("code") }}</th>
                 <th class="w-[25%]">{{ $t("name") }}</th>
-                <th class="w-[35%]">{{ $t("slug") }}</th>
+                <th class="w-[5%]">{{ $t("listing_date") }}</th>
+                <th class="w-[5%]">{{ $t("total_price") }}</th>
+                <th class="w-[5%]">{{ $t("year") }}</th>
+                <th class="w-[5%]">{{ $t("mileage") }}</th>
+                <th class="w-[5%]">{{ $t("condition") }}</th>
+                <th class="w-[5%]">{{ $t("brand") }}</th>
+                <th class="w-[5%]">{{ $t("model") }}</th>
+                <th class="w-[5%]">{{ $t("fuel_type") }}</th>
+                <th class="w-[5%]">{{ $t("plate_number") }}</th>
+                <th class="w-[10%]">{{ $t("is_featured") }}</th>
+                <th class="w-[10%]">{{ $t("is_active") }}</th>
                 <th class="w-[10%]">{{ $t("status") }}</th>
-                <th class="w-[10%] action-col">{{ $t("actions") }}</th>
+                <th class="w-[10%]">{{ $t("actions") }}</th>
               </tr>
             </thead>
             <tbody
@@ -53,22 +63,38 @@
         </div>
       </div>
     </div>
+    <ModalView :show-modal="false" />
+    <ChangeGalleryImages :show-modal="false" />
+    <ChangeFeaturedImage :show-modal="false" />
   </DefaultLayout>
 </template>
 
 <script setup>
-import { Head, Link, router } from "@inertiajs/vue3";
+import { Head, Link, router, useForm } from "@inertiajs/vue3";
+import ChangeFeaturedImage from "./ChangeFeaturedImage.vue";
+import ChangeGalleryImages from "./ChangeGalleryImages.vue";
+import ModalView from "./ModalView.vue";
 import CheckBox from "@/Components/Others/CheckBox.vue";
 import ActionButtons from "@/Components/Others/ActionButtons.vue";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
-import { onMounted, onBeforeUnmount, reactive, h, createApp, ref } from "vue";
-import useCategories from "@/composables/useCategories";
+import {
+  onMounted,
+  onBeforeUnmount,
+  reactive,
+  h,
+  createApp,
+  ref,
+  getCurrentInstance,
+} from "vue";
+import { useCar } from "@/stores/car";
 import { i18n } from "@/i18n";
 import { useEventBus } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import { nextTick, watch } from "vue";
 import useHelper from "@/composables/useHelper";
-const { statusFormat, imageFormat } = useHelper();
+const { statusFormat, imageFormat, formatMoney, formatDate, formatNumber } = useHelper();
+const { proxy } = getCurrentInstance();
+import { events } from "@/events";
 
 import { useMainStore } from "@/stores/main";
 
@@ -76,31 +102,34 @@ const mainStore = useMainStore();
 
 const { t } = useI18n();
 const tableData = ref(false);
-
-const { emit: closePopup } = useEventBus("popup:close");
-const { on: actionConfirmed } = useEventBus("action:confirmed");
-const { emit: openConfirmPopUp } = useEventBus("confirm:open");
-
-const { deleteCategory } = useCategories();
+const carStore = useCar();
+const showModalView = ref(false);
+const showGalleryModal = ref(false);
+const form = useForm({
+  ids: [],
+});
 
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
-  { label: t("cars"), url: "/admin/cars" },
-  { label: t("list"), url: null, is_active: true },
+  { label: t("cars"), url: null },
+  { label: t("cars.listing"), url: null, is_active: true },
 ]);
 
 onMounted(() => {
-  tableData.value = $("#car-category").DataTable({
+  tableData.value = $("#cars").DataTable({
     processing: true,
     serverSide: true,
     pageLength: 10,
-    order: [[1, "desc"]],
+    order: [
+      [4, "desc"],
+      // [4, "asc"],
+    ],
     aLengthMenu: [
       [5, 10, 25, 50, -1],
       [5, 10, 25, 50, 100, "All"],
     ],
     ajax: {
-      url: route("categories.list"),
+      url: route("cars.list"),
       type: "GET",
     },
     columns: [
@@ -119,10 +148,10 @@ onMounted(() => {
             const checkBoxApp = createApp({
               render() {
                 return h(CheckBox, {
-                  modelValue: false,
                   class: "check-row",
                   value: parseInt(row.id),
-                  "onUpdate:modelValue": (checked) =>
+                  checked: false,
+                  "onUpdate:checked": (checked) =>
                     mainStore.onCheckRow(checked, parseInt(row.id)),
                 });
               },
@@ -135,8 +164,7 @@ onMounted(() => {
         },
       },
       {
-        data: "image_path",
-        name: "image_path",
+        data: "featured_image_full_path",
         orderable: false,
         searchable: false,
         className: "action-col text-center",
@@ -146,15 +174,55 @@ onMounted(() => {
       },
       { data: "code", name: "code" },
       { data: "name", name: "name" },
-      { data: "slug", name: "slug" },
+      {
+        data: "listing_date",
+        name: "listing_date",
+        render: (data, type, row, meta) => {
+          return formatDate(data);
+        },
+      },
+
+      {
+        data: "total_price",
+        name: "total_price",
+        render: (data, type, row, meta) => {
+          return formatMoney(data);
+        },
+      },
+      { data: "year", name: "year", className: "text-center" },
+      {
+        data: "mileage",
+        name: "mileage",
+        className: "text-right",
+        render: (data) => formatNumber(data) + " Km",
+      },
+      { data: "condition_name", name: "condition.name" },
+      { data: "brand_name", name: "brand.name" },
+      { data: "model_name", name: "model.name" },
+      { data: "fuel_type_name", name: "fuelType.name" },
+      { data: "plate_number", name: "plate_number" },
+      {
+        data: "is_featured",
+        name: "is_featured",
+        className: "text-center",
+        render: function (data, type, row, meta) {
+          return statusFormat(data ? "yes" : "no");
+        },
+      },
       {
         data: "is_active",
-        className: "action-col",
-        orderable: false,
-        searchable: false,
+        name: "is_active",
+        className: "text-center",
         render: function (data, type, row, meta) {
-          const status = parseInt(data) == 1 ? "active" : "inactive";
-          return statusFormat(status);
+          return statusFormat(data ? "active" : "inactive");
+        },
+      },
+      {
+        data: "status",
+        name: "status",
+        className: "text-center",
+        render: function (data, type, row, meta) {
+          return statusFormat(data);
         },
       },
       {
@@ -181,8 +249,56 @@ onMounted(() => {
                         {
                           class:
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: () => {
-                            router.visit(route("categories.edit", row.id));
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("modal:modalview:open", {
+                              modal_title: "car.details",
+                              event_type: "view",
+                              item: row,
+                            });
+                          },
+                        },
+                        [h("i", { class: "fa fa-eye mr-2" }), t("view")]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("modal:featuredimage:open", {
+                              modal_title: "featured_image",
+                              event_type: "change_featured_image",
+                              item: row,
+                            });
+                          },
+                        },
+                        [h("i", { class: "fa fa-image mr-2" }), t("featured_image")]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("modal:changgallery:open", {
+                              modal_title: "gallery_images",
+                              event_type: "change_gallery_images",
+                              item: row,
+                            });
+                          },
+                        },
+                        [h("i", { class: "fa fa-image mr-2" }), t("change_gallery")]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            router.get(route("cars.edit", row.id));
                           },
                         },
                         [h("i", { class: "fa fa-pencil mr-2" }), t("edit")]
@@ -192,7 +308,10 @@ onMounted(() => {
                         {
                           class:
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: () => btnDelete(row),
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("confirm:open", [row.id]);
+                          },
                         },
                         [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
                       ),
@@ -208,32 +327,82 @@ onMounted(() => {
         },
       },
     ],
-  });
-  actionConfirmed((item, action) => {
-    deleteCategory(item, action);
-    closePopup();
-    tableData.value.ajax.reload();
-    mainStore.clearSelectedRows();
+    rowCallback: function (row, data, index) {
+      const _row = $(row);
+      $(_row).find("td:not(:first-child):not(:last-child)").addClass("cursor-pointer");
+      $(_row)
+        .find("td:not(:first-child):not(:last-child)")
+        .on("click", function (e) {
+          e.preventDefault();
+          events.emit("modal:modalview:open", {
+            modal_title: "car.details",
+            event_type: "view",
+            item: data,
+          });
+        });
+    },
+    language: {
+      // paginate: {
+      //   first: "First",
+      //   last: "Last",
+      //   next: "Next",
+      //   previous: "Previous"
+      // },
+      // search: "Filter records:",
+      // // lengthMenu: "Display _MENU_ records per page",
+      // info: "Sowing _START_ to _END_ of _TOTAL_ entries",
+      // infoEmpthy: "No entries available",
+      // infoFiltered: "(filtered from _MAX_ total records)",
+      // zeroRecords: "No matching records found",
+      // loadingRecords: "Loading...",
+      // emptyTable: "No data available in table"
+    },
   });
 });
 
-
-function btnDelete(item) {
-  openConfirmPopUp({
-    data: item,
-    action: "delete",
-  });
-}
+events.on("modal:success", () => {
+  tableData.value.ajax.reload();
+});
 
 const btnDeleteSelected = () => {
-  openConfirmPopUp({
-    data: mainStore.selectedRows.length > 0 ? mainStore.selectedRows : false,
-    action: t("delete-selected"),
-  });
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
+  events.emit("confirm:open", items);
 };
 
-onBeforeUnmount(() => mainStore.clearSelectedRows());
+events.on("confirm:confirmed", (data) => {
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : data;
+  form.ids = items;
+  form.post(route("cars.destroy.selected"), {
+    preserveScroll: true,
+    onSuccess: () => {
+      const Toast = proxy.$swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = proxy.$swal.stopTimer;
+          toast.onmouseleave = proxy.$swal.resumeTimer;
+        },
+      });
+      Toast.fire({
+        icon: "success",
+        title: `${t("item.count", items.length)} ${t("successfully_deleted")}`,
+      });
+      form.reset();
+      events.emit("confirm:cancel");
+      events.emit("confirm:success");
+    },
+    onError: () => {},
+  });
+});
+events.on("confirm:success", () => {
+  tableData.value.ajax.reload();
+  mainStore.clearSelectedRows();
+});
 
+onBeforeUnmount(() => mainStore.clearSelectedRows());
 </script>
 
 <style lang="scss">

@@ -145,8 +145,7 @@ onMounted(() => {
         orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          const status = parseInt(data) == 1 ? "active" : "inactive";
-          return statusFormat(status);
+          return statusFormat(data ? "active" : "inactive");
         },
       },
       {

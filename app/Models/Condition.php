@@ -11,6 +11,14 @@ class Condition extends Model
     protected $fillable = ['name', 'is_active'];
     public $timestamps = false;
 
+    protected $appends = ['status'];
 
-    protected $appends = [];
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->attributes['is_active'] ? true : false;
+    }
+    public function getStatusAttribute(): string
+    {
+        return $this->is_active ? 'active' : 'inactive';
+    }
 }

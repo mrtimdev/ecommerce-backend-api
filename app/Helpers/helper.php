@@ -19,6 +19,22 @@ if (!function_exists('statusFormat')) {
     }
 }
 
+
+if (!function_exists('decimal')) {
+    function decimal($value)
+    {
+        return number_format((float)$value, 2, '.', '');
+    }
+}
+
+if (!function_exists('formatMoney')) {
+    function formatMoney($amount)
+    {
+        // Format the amount as currency
+        return '<span class="text-xs font-semibold">' . number_format($amount, 2) . '</span>';
+    }
+}
+
 if (!function_exists('imageFormat')) {
     function imageFormat($src)
     {
@@ -34,5 +50,39 @@ if (!function_exists('generateSlug')) {
     function generateSlug($value)
     {
         return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $value), '-'));
+    }
+}
+
+
+
+if (!function_exists('extractYouTubeVideoId')) {
+    function extractYouTubeVideoId($url, $is_full_url = false)
+    {
+        if(!$url) {
+            return "";
+        }
+        $regex = '/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|.*?[?&]v=)|youtu\.be\/)([^&?\/\s]{11})/';
+        preg_match($regex, $url, $match);
+        if($is_full_url) {
+            return '<a class="text-blue-400" href="'.($url ?? "").'" target="_blank">'.($url ?? "").'</a>';
+        }
+        return $match ? $match[1] : null;
+    }
+}
+if (!function_exists('extractFacebookVideoId')) {
+    function extractFacebookVideoId($url, $is_full_url = false)
+    {
+        if(!$url) {
+            return "";
+        }
+        $shareRegex = '/https?:\/\/(?:www\.)?web\.facebook\.com\/share\/v\/([^\/?&]+)/';
+        $watchRegex = '/https?:\/\/(?:www\.)?fb\.watch\/([^\/?&]+)/';
+        if($is_full_url) {
+            return '<a class="text-blue-400" href="'.($url ?? "").'" target="_blank">'.($url ?? "").'</a>';
+        }
+        if (preg_match($shareRegex, $url, $match) || preg_match($watchRegex, $url, $match)) {
+            return $match[1];
+        }
+        return null;
     }
 }

@@ -1,6 +1,6 @@
 <template>
     <DefaultLayout>
-    <Head :title="$t('fuelTypes')" />
+    <Head :title="$t('fuel_types')" />
     <div class="container">
       <div class="content-header rounded-tl-md rounded-tr-md p-5 border-b bg-white dark:border-gray-700 dark:bg-boxdark-1 flex flex-grow items-center justify-between">
         <Bc :crumbs="breadcrumbs" />

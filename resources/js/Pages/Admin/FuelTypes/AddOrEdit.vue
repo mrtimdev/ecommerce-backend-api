@@ -9,24 +9,34 @@
               <div class="p-4 md:p-5">
                 <div class="grid gap-6 mb-6 md:grid-cols-2">
                   <div>
+                    <label for="code" class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">{{
+                      $t('code') }}</label>
+                    <input type="text" ref="code" id="code" v-model=" fuelTypeStore.form.code "
+                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500 dark:bg-tim-11"
+                      :placeholder=" $t('fuel_type.code') " />
+                    <InputError :message=" fuelTypeStore.form.errors.code " class="mt-2" />
+                  </div>
+                  <div>
                     <label for="name" class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">{{
                       $t('name') }}</label>
                     <input type="text" ref="name" id="name" v-model=" fuelTypeStore.form.name "
                       class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500 dark:bg-tim-11"
-                      :placeholder=" $t('fuelType.name') " />
+                      :placeholder=" $t('fuel_type.name') " />
                     <InputError :message=" fuelTypeStore.form.errors.name " class="mt-2" />
                   </div>
-                  <div>
-                    <label for="status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('select_status') }}</label>
-                    <select v-model=" fuelTypeStore.form.is_active "
-                      id="status"
-                      class="bg-gray-50 border  border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500">
-                      <option selected value=""> {{ $t('select_status') }}</option>
-                      <option value="1">{{ $t('active') }}</option>
-                      <option value="0">{{ $t('inactive') }}</option>
-                    </select>
-                    <InputError :message=" fuelTypeStore.form.errors.is_active " class="mt-2" />
-                  </div>
+                  
+                </div>
+
+                <div class="mb-6">
+                  <label for="status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{{ $t('select_status') }}</label>
+                  <select v-model=" fuelTypeStore.form.is_active "
+                    id="status"
+                    class="bg-gray-50 border  border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500">
+                    <option disabled> {{ $t('select_status') }}</option>
+                    <option :value="true">{{ $t('active') }}</option>
+                    <option :value="false">{{ $t('inactive') }}</option>
+                  </select>
+                  <InputError :message=" fuelTypeStore.form.errors.is_active " class="mt-2" />
                 </div>
                 
               </div>
@@ -68,9 +78,9 @@
 
   const isVisible = ref(false)
   const name = ref(null)
-  const modal_title = ref('fuelType.add')
+  const modal_title = ref('fuel_type.add')
   events.on('modal:open', (data) => {
-    modal_title.value = data.modal_title || 'fuelType.add'
+    modal_title.value = data.modal_title || 'fuel_type.add'
     isVisible.value = true
     fuelTypeStore.isSuccess = false
     fuelTypeStore.checkEvent(data)

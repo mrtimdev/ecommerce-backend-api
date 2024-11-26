@@ -120,20 +120,38 @@ class BrandController extends Controller
         return redirect()->route('brands.index');
     }
     public function deleteSelected(Request $request)
-     {
+    {
         $ids = $request->input('ids');
-        $brand = Brand::whereIn('id', $ids)->get();
-        if ($brand->isEmpty()) {
-            return response()->json(['message' => 'No brand found with the provided IDs'], 404);
+        $brands = Brand::whereIn('id', $ids)->get();
+
+        if ($brands->isEmpty()) {
+            return redirect()->route('brands.index')->with('message', 'No brands found with the provided IDs');
         }
-        foreach ($brand as $brand) {
+
+        // Check for associated cars
+        $brandsWithCars = $brands->filter(function($brand) {
+            return $brand->cars()->exists(); // Assuming 'cars' is the relationship method
+        });
+
+        if ($brandsWithCars->isNotEmpty()) {
+            return response()->json([
+                'error' => 'Cannot delete brands with associated cars: ' . $brandsWithCars->pluck('name')->implode(', ')
+            ], 401);
+            return redirect()->route('brands.index')->with('error', 'Cannot delete brands with associated cars: ' . $brandsWithCars->pluck('id')->implode(', '));
+        }
+
+        // Delete image files if they exist
+        foreach ($brands as $brand) {
             if ($brand->image_path) {
                 Storage::disk('public')->delete($brand->image_path);
             }
         }
+
+        // Proceed to delete the brands
         Brand::whereIn('id', $ids)->delete();  
-        return redirect()->route('brands.index');
+        return redirect()->route('brands.index')->with('success', 'Brands deleted successfully.');
     }
+
     public function getBrands(Request $request)
     {
         if ($request->ajax()) {

@@ -1,12 +1,21 @@
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { onClickOutside } from "@vueuse/core";
+import { useMainStore } from "@/stores/main";
 
+const mainStore = useMainStore();
 const dropdownOpen = ref(false);
 const target = ref(null);
 
 onClickOutside(target, () => {
   dropdownOpen.value = false;
+});
+
+watch(() => dropdownOpen.value, (is_opened) => {
+  if(!is_opened) {
+    mainStore.clearSelectedRows();
+  }
+  
 });
 </script>
 

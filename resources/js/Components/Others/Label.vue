@@ -1,5 +1,5 @@
 <template>
-    <label :for="for_id" class="block font-medium mb-1">
+    <label :for="for_id" class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">
         <slot name="default"></slot>
         <span v-if="isRequired" class="text-rose-600">*</span>
     </label>

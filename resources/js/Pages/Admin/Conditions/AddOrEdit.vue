@@ -21,9 +21,9 @@
                   <select v-model=" conditionStore.form.is_active "
                     id="status"
                     class="bg-gray-50 border  border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500">
-                    <option selected value=""> {{ $t('select_status') }}</option>
-                    <option value="1">{{ $t('active') }}</option>
-                    <option value="0">{{ $t('inactive') }}</option>
+                    <option disabled> {{ $t('select_status') }}</option>
+                    <option :value="true">{{ $t('active') }}</option>
+                    <option :value="false">{{ $t('inactive') }}</option>
                   </select>
                   <InputError :message=" conditionStore.form.errors.is_active " class="mt-2" />
                 </div>
@@ -72,7 +72,6 @@ const modal_title = ref('condition.add')
 events.on('modal:open', (data) => {
   modal_title.value = data.modal_title || 'condition.add'
   isVisible.value = true
-  conditionStore.isSuccess = false
   conditionStore.checkEvent(data)
   nextTick(() => {
     name.value.focus()

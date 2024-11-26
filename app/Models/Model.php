@@ -12,7 +12,16 @@ class Model extends EloquentModel
     public $timestamps = false;
 
 
-    protected $appends = [];
+    protected $appends = ['status'];
+
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->attributes['is_active'] ? true : false;
+    }
+    public function getStatusAttribute(): string
+    {
+        return $this->is_active ? 'active' : 'inactive';
+    }
 
     public function brand()
     {

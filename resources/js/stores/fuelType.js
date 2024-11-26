@@ -11,11 +11,13 @@ import { ref } from 'vue'
 
 export const useFuelType = defineStore('fuelType', () => {
     const form = useForm({
+        id: null,
+        code: '',
         name: '',
-        is_active: 1,
+        is_active: true,
     })
 
-    const modal_title = ref('fuelType.add')
+    const modal_title = ref('fuel_type.add')
     const event_type = ref('add')
 
     const checkEvent = (data) => {
@@ -25,6 +27,7 @@ export const useFuelType = defineStore('fuelType', () => {
 
         if (data.event_type === 'edit') {
             form.id = data.item.id
+            form.code = data.item.code
             form.name = data.item.name
             form.is_active = data.item.is_active
         }
@@ -49,7 +52,7 @@ export const useFuelType = defineStore('fuelType', () => {
         form.code = ''
         form.name = ''
         form.brand_id = ''
-        form.is_active = 1
+        form.is_active = true
         form.errors = {}
     }
 

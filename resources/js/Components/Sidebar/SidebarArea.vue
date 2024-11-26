@@ -1,65 +1,138 @@
 <script setup>
-import { useSidebarStore } from '@/stores/sidebar'
-import { onClickOutside } from '@vueuse/core'
-import { ref } from 'vue'
-import SidebarItem from './SidebarItem.vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { useSidebarStore } from "@/stores/sidebar";
+import { onClickOutside } from "@vueuse/core";
+import { ref, computed, onMounted } from "vue";
+import SidebarItem from "./SidebarItem.vue";
+import { Link, usePage } from "@inertiajs/vue3";
+import { events } from "@/events";
+import { useMainStore } from "@/stores/main";
+import LoadingIcon from "../Others/LoadingIcon.vue";
 
-
-const target = ref(null)
-const sidebarStore = useSidebarStore()
-const page = usePage() // Get the current page context
+const mainStore = useMainStore();
+const target = ref(null);
+const sidebarStore = useSidebarStore();
+const page = usePage();
+const setting = ref(false);
 
 onClickOutside(target, () => {
-  sidebarStore.isSidebarOpen = false
-})
+  sidebarStore.isSidebarOpen = false;
+});
 
-
+events.on("refresh-settings", () => {
+  mainStore.loadSetting();
+});
+onMounted(() => {
+  mainStore.loadSetting();
+});
 
 const menuGroups = ref([
   {
-    name: 'MENU',
+    name: "MENU",
     menuItems: [
       {
-        icon: `<i class="fa fa-home"></i>`,
-        label: 'dashboard',
-        routeName: 'dashboard'
+        icon: `<i class="mt-[5px] fi fi-tr-dashboard-monitor"></i>`,
+        label: "Dashboard",
+        routeName: "dashboard",
       },
       {
-        icon: `<i class="fa-solid fa-list"></i>`,
-        label: 'Cars Specifications',
+        icon: `<i class="mt-[5px] fi fi-ts-workflow-setting-alt"></i>`,
+        label: "Cars Specifications",
         children: [
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Categories', routeName: 'categories.index' },
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Conditions', routeName: 'conditions.index' },
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Brands', routeName: 'brands.index' },
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Models', routeName: 'models.index' },
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Fuel Types', routeName: 'fuelTypes.index' },
-        ]
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Categories",
+            routeName: "categories.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Conditions",
+            routeName: "conditions.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Brands",
+            routeName: "brands.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Models",
+            routeName: "models.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Fuel Types",
+            routeName: "fuelTypes.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Transmission Types",
+            routeName: "transmissionTypes.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Drive Types",
+            routeName: "driveTypes.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Steerings",
+            routeName: "steerings.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Colors",
+            routeName: "colors.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "No. of Passengers",
+            routeName: "passengers.index",
+          },
+          {
+            icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+            label: "Other Options",
+            routeName: "hotmarks.index",
+          },
+        ],
       },
       {
-        icon: `<i class="fa-solid fa-truck"></i>`,
-        label: 'Cars',
-        children: [
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Cars', routeName: 'cars.index' },
-        ]
+        icon: `<i class="mt-[5px] fi fi-tr-car-side"></i>`,
+        label: "Cars Listing",
+        routeName: "cars.index",
       },
       {
-        icon: `<i class="fa-solid fa-list"></i>`,
-        label: 'Frontend',
-        children: [
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Home Page', routeName: 'frontend.homepage.sliders.index' },
-        ]
+        icon: `<i class="mt-[5px] fi fi-rr-shopping-cart"></i>`,
+        label: "Orders",
+        routeName: "orders.index",
       },
       {
-        icon: `<i class="fa-solid fa-list"></i>`,
-        label: 'Settings',
-        children: [
-          { icon: `<i class="fa-sharp fa-circle-dot"></i>`, label: 'Settings', routeName: 'settings.index' },
-        ]
+        icon: `<i class="mt-[5px] fi fi-ts-plan"></i>`,
+        label: "Frontend",
+        routeName: "frontend.page.sliders.index",
       },
-    ]
+      {
+        icon: `<i class="mt-[5px] fi fi-rr-user-gear"></i>`,
+        label: "Users",
+        routeName: "users.index",
+      },
+      {
+        icon: `<i class="mt-[5px] fi fi-tr-plan"></i>`,
+        label: "Permissions",
+        routeName: "permissions.index",
+      },
+      {
+        icon: `<i class="mt-[5px] fi fi-ts-plan-strategy"></i>`,
+        label: "Roles",
+        routeName: "roles.index",
+      },
+      {
+        icon: `<i class="mt-[5px] fi fi-tr-customize"></i>`,
+        label: "Settings",
+        routeName: "settings.index",
+      },
+    ],
   },
-])
+]);
 </script>
 
 <template>
@@ -67,18 +140,34 @@ const menuGroups = ref([
     class="absolute left-0 top-0 z-40 flex h-screen w-72.5 flex-col overflow-y-hidden duration-300 ease-linear dark:bg-boxdark-1 bg-[#ffffff] lg:static lg:translate-x-0"
     :class="{
       'translate-x-0': sidebarStore.isSidebarOpen,
-      '-translate-x-full': !sidebarStore.isSidebarOpen
+      '-translate-x-full': !sidebarStore.isSidebarOpen,
     }"
     ref="target"
   >
     <!-- SIDEBAR HEADER -->
     <div class="py-1 shadow-2">
-      <div class="flex flex-grow items-center justify-between py-4 px-4 md:px-6 2xl:px-11">
-        <Link href="/dashboard">
-          <i class="fa fa-home"></i>
-          TIM Dev
-        </Link>
-  
+      <div
+        class="flex flex-grow items-center justify-between py-[3px] px-4 md:px-6 2xl:px-11"
+      >
+        <a
+          :href="
+            mainStore.setting.site_link
+              ? mainStore.setting.site_link
+              : 'https://ftdevs.net'
+          "
+          target="_blank"
+          class="flex gap-2 items-center justify-between"
+        >
+          <LoadingIcon v-if="mainStore.setting.site_logo === undefined" />
+          <img
+            v-if="mainStore.setting && mainStore.setting.site_logo"
+            :src="'/storage/' + mainStore.setting.site_logo"
+            alt="Site Logo"
+            class="w-[50px] h-[50px] object-cover rounded-full border border-purple-300"
+          />
+          <span>{{ mainStore.setting.site_name }}</span>
+        </a>
+
         <button class="block lg:hidden" @click="sidebarStore.isSidebarOpen = false">
           <svg
             class="fill-current"
@@ -101,18 +190,20 @@ const menuGroups = ref([
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear">
       <!-- Sidebar Menu -->
       <nav class="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
-        <template v-for="menuGroup in menuGroups">
-          <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">{{ menuGroup.name }}</h3>
+        <div v-for="(menuGroup, index) in menuGroups" :key="index">
+          <h3 class="mb-4 ml-4 text-sm font-medium text-bodydark2">
+            {{ menuGroup.name }}
+          </h3>
           <ul class="mb-6 flex flex-col gap-1.5">
             <SidebarItem
               v-for="(menuItem, index) in menuGroup.menuItems"
               :item="menuItem"
               :key="index"
               :index="index"
-              :currentRoute="page.url" 
+              :currentRoute="page.url"
             />
           </ul>
-        </template>
+        </div>
       </nav>
       <!-- Sidebar Menu -->
     </div>

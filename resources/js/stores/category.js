@@ -15,7 +15,7 @@ export const useCategory = defineStore('category', () => {
         name: '',
         slug: '',
         image_path: null,
-        is_active: 1,
+        is_active: true,
         is_save_and_more: false,
         errors: {}
     })
@@ -62,7 +62,7 @@ export const useCategory = defineStore('category', () => {
         form.name = ''
         form.slug = ''
         form.image_path = null
-        form.is_active = 1
+        form.is_active = true
         form.errors = {}
     }
 

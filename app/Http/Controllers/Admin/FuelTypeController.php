@@ -24,6 +24,7 @@ class FuelTypeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'code' => 'required|string|max:100|unique:fuel_types,code|regex:/^[^\s]+$/|max:100',
             'name' => 'required|string|max:191|unique:fuel_types,name',
             'is_active' => ['required', 'boolean'],
         ]);
@@ -48,6 +49,13 @@ class FuelTypeController extends Controller
     public function update(Request $request, FuelType $fuelType)
     {
         $validated = $request->validate([
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[^\s]+$/',
+                Rule::unique('fuel_types', 'code')->ignore($fuelType->id), 
+            ],
             'name' => [
                 'required',
                 'string',

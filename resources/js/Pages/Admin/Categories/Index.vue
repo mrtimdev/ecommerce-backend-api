@@ -84,8 +84,8 @@ const tableData = ref(false);
 
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
-  { label: t("cars"), url: "/cars" },
-  { label: t("categories"), url: null, is_active: true },
+  { label: t("categories"), url: null },
+  { label: t("list"), url: null, is_active: true },
 ]);
 
 onMounted(() => {
@@ -134,8 +134,7 @@ onMounted(() => {
         },
       },
       {
-        data: "image_path",
-        name: "image_path",
+        data: "image_full_path",
         orderable: false,
         searchable: false,
         className: "action-col text-center",
@@ -152,8 +151,7 @@ onMounted(() => {
         orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          const status = parseInt(data) == 1 ? "active" : "inactive";
-          return statusFormat(status);
+          return statusFormat(data ? "active" : "inactive");
         },
       },
       {

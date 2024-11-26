@@ -1,5 +1,5 @@
 <script setup>
-    import { watch, ref, computed, onMounted, onBeforeUnmount } from 'vue'
+    import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
     import { onClickOutside } from '@vueuse/core'; 
     import { events } from '@/events'
 
@@ -45,14 +45,6 @@
     const emit = defineEmits(['update:show', 'confirm', 'close']);
     const target = ref(null)
 
-    watch(() => props.show, (newValue) => {
-        if (newValue) {
-            console.log('Modal is opened')
-        }
-    })
-    
-
-
     onMounted(() => {
         window.addEventListener('keydown', handleEscape);
     });
@@ -89,7 +81,7 @@
 
 <template>
     <Transition name="popup" appear appear-class="bounce">
-        <div v-if="show"  class="custom-backdrop-blur popup fixed top-0 left-0 right-0 bottom-0 z-50 grid h-full overflow-y-auto lg:absolute">
+        <div v-if="show"  class="custom-backdrop-blur popup fixed top-0 left-0 right-0 bottom-0 z-50 p-10 grid h-full overflow-y-auto lg:absolute">
             <div ref="target" :class="modalClass" class="fixed top-0 bottom-0 left-0 right-0 z-10 m-auto w-full bg-white shadow-xl dark:bg-dark-foreground md:relative md:rounded-xl">
                 <div class="w-full relative max-h-full flex items-center justify-center">
                     <!-- Modal content -->

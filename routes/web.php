@@ -1,18 +1,29 @@
 <?php
 
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Response;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FuelTypeController;
 use App\Http\Controllers\Admin\ConditionController;
+use App\Http\Controllers\Admin\DriveTypeController;
+use App\Http\Controllers\Admin\PassengerController;
+use App\Http\Controllers\Admin\OtherOptionController;
+use App\Http\Controllers\Admin\TransmissionTypeController;
+use App\Http\Controllers\Admin\SteeringController;
+
 
 
 Route::post('/admin/locale', [LocaleController::class, 'setLocale']);
@@ -32,14 +43,20 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->prefix('admin')->group(function () {
     
 
-    Route::get('/cars/all', [CarController::class, 'getCars'])->name('cars.list');
+    Route::get('/cars/all', [CarController::class, 'getCars'])->name('cars.all');
+    Route::get('/cars/list', [CarController::class, 'getListCars'])->name('cars.list');
     Route::post('/cars/delete-selected', [CarController::class, 'deleteSelected'])->name('cars.destroy.selected');
     Route::get('cars/create', [CarController::class, 'create'])->name('cars.create');
     Route::post('cars/store', [CarController::class, 'store'])->name('cars.store');
     Route::get('cars', [CarController::class, 'index'])->name('cars.index');
+    Route::get('cars/{car}/galleries', [CarController::class, 'getGalleries'])->name('cars.galleries');
+    Route::get('cars/{car}/show', [CarController::class, 'show'])->name('cars.show');
     Route::delete('cars/{car}/delete', [CarController::class, 'destroy'])->name('cars.destroy');
     Route::get('cars/{car}/edit', [CarController::class, 'edit'])->name('cars.edit');
     Route::post('cars/{car}/update', [CarController::class, 'update'])->name('cars.update');
+    Route::post('cars/gallery/{car}/update-gallery', [CarController::class, 'updateGallery'])->name('cars.updateGallery');
+    Route::post('cars/gallery/{car}/update-featured-image', [CarController::class, 'updateFeaturedImage'])->name('cars.updateFeaturedImage');
+    Route::post('cars/gallery/{carImage}/remove-gallery', [CarController::class, 'removeGallery'])->name('cars.removeGallery');
 
     Route::get('/categories/all', [CategoryController::class, 'getCategories'])->name('categories.list');
     Route::post('/categories/delete-selected', [CategoryController::class, 'deleteSelected'])->name('categories.destroy.selected');
@@ -70,6 +87,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::post('brands/{brand}/update', [BrandController::class, 'update'])->name('brands.update');
     
+    Route::get('/models/by-brands', [ModelController::class, 'getModelsByBrand'])->name('models.by.brand');
     Route::get('/models/all', [ModelController::class, 'getModels'])->name('models.list');
     Route::post('/models/delete-selected', [ModelController::class, 'deleteSelected'])->name('models.destroy.selected');
     Route::get('models/create', [ModelController::class, 'create'])->name('models.create');
@@ -89,37 +107,208 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('fuel_types/{fuelType}/update', [FuelTypeController::class, 'update'])->name('fuelTypes.update');
 
 
-    Route::get('/transmission-types', function () {
-        return Inertia::render('Admin/Cars/Transmissiontypes');
-    })->name('transmissiontypes');
+    Route::get('/transmission_types/all', [TransmissionTypeController::class, 'getTransmissionTypes'])->name('transmissionTypes.list');
+    Route::post('/transmission_types/delete-selected', [TransmissionTypeController::class, 'deleteSelected'])->name('transmissionTypes.destroy.selected');
+    Route::get('transmission_types/create', [TransmissionTypeController::class, 'create'])->name('transmissionTypes.create');
+    Route::post('transmission_types/store', [TransmissionTypeController::class, 'store'])->name('transmissionTypes.store');
+    Route::get('transmission_types', [TransmissionTypeController::class, 'index'])->name('transmissionTypes.index');
+    Route::get('transmission_types/{transmissionType}/edit', [TransmissionTypeController::class, 'edit'])->name('transmissionTypes.edit');
+    Route::post('transmission_types/{transmissionType}/update', [TransmissionTypeController::class, 'update'])->name('transmissionTypes.update');
+
+    Route::get('/drive_types/all', [DriveTypeController::class, 'getDriveTypes'])->name('driveTypes.list');
+    Route::post('/drive_types/delete-selected', [DriveTypeController::class, 'deleteSelected'])->name('driveTypes.destroy.selected');
+    Route::post('drive_types/store', [DriveTypeController::class, 'store'])->name('driveTypes.store');
+    Route::get('drive_types', [DriveTypeController::class, 'index'])->name('driveTypes.index');
+    Route::post('drive_types/{driveType}/update', [DriveTypeController::class, 'update'])->name('driveTypes.update');
+
+    Route::get('/steerings/all', [SteeringController::class, 'getSteerings'])->name('steerings.list');
+    Route::post('/steerings/delete-selected', [SteeringController::class, 'deleteSelected'])->name('steerings.destroy.selected');
+    Route::post('steerings/store', [SteeringController::class, 'store'])->name('steerings.store');
+    Route::get('steerings', [SteeringController::class, 'index'])->name('steerings.index');
+    Route::post('steerings/{steering}/update', [SteeringController::class, 'update'])->name('steerings.update');
+
+
+    Route::get('/colors/all', [ColorController::class, 'getColors'])->name('colors.list');
+    Route::post('/colors/delete-selected', [ColorController::class, 'deleteSelected'])->name('colors.destroy.selected');
+    Route::get('colors/create', [ColorController::class, 'create'])->name('colors.create');
+    Route::post('colors/store', [ColorController::class, 'store'])->name('colors.store');
+    Route::get('colors', [ColorController::class, 'index'])->name('colors.index');
+    Route::get('colors/{color}/edit', [ColorController::class, 'edit'])->name('colors.edit');
+    Route::post('colors/{color}/update', [ColorController::class, 'update'])->name('colors.update');
+
+    Route::get('/passengers/all', [PassengerController::class, 'getPassengers'])->name('passengers.list');
+    Route::post('/passengers/delete-selected', [PassengerController::class, 'deleteSelected'])->name('passengers.destroy.selected');
+    Route::post('passengers/store', [PassengerController::class, 'store'])->name('passengers.store');
+    Route::get('passengers', [PassengerController::class, 'index'])->name('passengers.index');
+    Route::post('passengers/{passenger}/update', [PassengerController::class, 'update'])->name('passengers.update');
+
+    // Route::name('other-options.')->group(function () {
+        Route::prefix('hotmarks')->group(function () {
+            Route::get('/all', [OtherOptionController::class, 'getHotMarks'])->name('hotmarks.list');
+            Route::post('/delete-selected', [OtherOptionController::class, 'deleteSelectedHotmarks'])->name('hotmarks.destroy.selected');
+            Route::get('/index', [OtherOptionController::class, 'hotMarkIndex'])->name('hotmarks.index');
+            Route::post('', [OtherOptionController::class, 'hotMarkStore'])->name('hotmarks.store');
+            Route::post('/{hotmark}', [OtherOptionController::class, 'hotMarkUpdate'])->name('hotmarks.update');
+        });
+        Route::prefix('options')->group(function () {
+            Route::get('/all', [OtherOptionController::class, 'getoptions'])->name('options.list');
+            Route::post('/delete-selected', [OtherOptionController::class, 'deleteSelectedoptions'])->name('options.destroy.selected');
+            Route::get('/index', [OtherOptionController::class, 'optionIndex'])->name('options.index');
+            Route::post('', [OtherOptionController::class, 'optionStore'])->name('options.store');
+            Route::post('/{option}', [OtherOptionController::class, 'optionUpdate'])->name('options.update');
+        });
+
+        Route::prefix('option-groups')->group(function () {
+            Route::get('/all', [OtherOptionController::class, 'getOptionGroups'])->name('optionGroups.list');
+            Route::post('/delete-selected', [OtherOptionController::class, 'deleteSelectedOptionGroups'])->name('optionGroups.destroy.selected');
+            Route::get('/index', [OtherOptionController::class, 'optionGroupIndex'])->name('optionGroups.index');
+            Route::post('', [OtherOptionController::class, 'optionGroupStore'])->name('optionGroups.store');
+            Route::post('/{optionGroup}', [OtherOptionController::class, 'optionGroupUpdate'])->name('optionGroups.update');
+        });
+    // });
 });
 
 # settings routes
 Route::middleware('auth')->prefix('admin')->name('settings.')->group(function () {
     Route::get('/settings', [SettingController::class, 'index'])->name('index');
-    Route::post('/settings/upload', [SettingController::class, 'upload'])->name('upload');
+
+    Route::prefix('settings')->group(function () {
+        Route::get('/info', [SettingController::class, 'getSettingConfigs'])->name('info');
+        Route::post('/shipping', [SettingController::class, 'shipping'])->name('shipping');
+        Route::post('/login_logo', [SettingController::class, 'login_logo'])->name('login_logo');
+        Route::post('/site_configs', [SettingController::class, 'site_configs'])->name('site_configs');
+    
+        Route::get('/countries/list', [SettingController::class, 'getCountries'])->name('countries.list');
+        Route::get('/countries/all', [SettingController::class, 'getAllCountries'])->name('countries.all');
+        Route::post('/countries/delete-selected', [SettingController::class, 'deleteSelectedCountries'])->name('countries.destroy.selected');
+        Route::get('/countries', [SettingController::class, 'countryIndex'])->name('countries.index');
+        Route::post('/countries', [SettingController::class, 'countryStore'])->name('countries.store');
+        Route::post('/countries/{country}', [SettingController::class, 'countryUpdate'])->name('countries.update');
+    });
+    
 });
 
 # frontend routes
 Route::middleware('auth')->prefix('admin')->group(function () {
     Route::middleware('auth')->prefix('frontend')->name('frontend.')->group(function () {
-        Route::middleware('auth')->prefix('homepage')->name('homepage.')->group(function () {
-            Route::get('/sliders/all', [FrontendController::class, 'getHomePageSliders'])->name('sliders.list');
-            Route::get('/sliders', [FrontendController::class, 'index'])->name('sliders.index');
-            Route::post('/sliders', [FrontendController::class, 'store'])->name('sliders.store');
-            Route::post('/sliders/{slider}', [FrontendController::class, 'update'])->name('sliders.update');
-            Route::delete('/sliders/{slider}', [FrontendController::class, 'destroy'])->name('sliders.destroy');
-            Route::get('/sliders/d', [FrontendController::class, 'deleteSelected'])->name('sliders.destroy.selected');
+        Route::middleware('auth')->prefix('pages')->name('page.')->group(function () {
 
+            Route::get('/menus/all', [FrontendController::class, 'getMenus'])->name('menus.list');
+            Route::post('/menus/delete-selected', [FrontendController::class, 'deleteSelectedMenus'])->name('menus.destroy.selected');
+            Route::get('/menus', [FrontendController::class, 'menuIndex'])->name('menus.index');
+            Route::post('/menus', [FrontendController::class, 'menustore'])->name('menus.store');
+            Route::post('/menus/{menu}', [FrontendController::class, 'menuUpdate'])->name('menus.update');
+
+
+            Route::get('/sliders/all', [FrontendController::class, 'getSliders'])->name('sliders.list');
+            Route::post('/sliders/delete-selected', [FrontendController::class, 'deleteSelectedSliders'])->name('sliders.destroy.selected');
+            Route::get('/sliders', [FrontendController::class, 'sliderIndex'])->name('sliders.index');
+            Route::post('/sliders', [FrontendController::class, 'sliderStore'])->name('sliders.store');
+            Route::post('/sliders/{slider}', [FrontendController::class, 'sliderUpdate'])->name('sliders.update');
             
+            # contact us page
+            Route::get('/contact-us', [FrontendController::class, 'contactUsIndex'])->name('contactus.index');
+            Route::post('/contact-us-store', [FrontendController::class, 'storeContactUs'])->name('contactus.store');
+            
+
+            Route::get('/videos/all', [FrontendController::class, 'getVideos'])->name('videos.list');
+            Route::post('/videos/delete-selected', [FrontendController::class, 'deleteSelectedVideos'])->name('videos.destroy.selected');
+            Route::get('/videos', [FrontendController::class, 'videoIndex'])->name('videos.index');
+            Route::post('/videos', [FrontendController::class, 'videoStore'])->name('videos.store');
+            Route::post('/videos/{video}', [FrontendController::class, 'videoUpdate'])->name('videos.update');
+            
+
+            Route::get('/stories/all', [FrontendController::class, 'getStories'])->name('stories.list');
+            Route::post('/stories/delete-selected', [FrontendController::class, 'deleteSelectedStories'])->name('stories.destroy.selected');
+            Route::get('/stories', [FrontendController::class, 'storyIndex'])->name('stories.index');
+            Route::post('/stories', [FrontendController::class, 'storyStore'])->name('stories.store');
+            Route::post('/stories/{story}', [FrontendController::class, 'storyUpdate'])->name('stories.update');
+            
+            
+            Route::get('/services/items/all', [FrontendController::class, 'getListServiceItems'])->name('serviceItems.list');
+            Route::post('/services/delete-item-selected', [FrontendController::class, 'deleteSelectedServiceItems'])->name('serviceItems.destroy.selected');
+            Route::get('/services', [FrontendController::class, 'serviceIndex'])->name('services.index');
+            Route::post('/services', [FrontendController::class, 'serviceStore'])->name('services.store');
+            Route::post('/services/item', [FrontendController::class, 'serviceItemStore'])->name('serviceItems.store');
+            Route::post('/services/{serviceItem}/update', [FrontendController::class, 'serviceItemUpdate'])->name('serviceItems.update');
+
+            Route::get('/guarantees/items/all', [FrontendController::class, 'getListGuaranteeItems'])->name('guaranteeItems.list');
+            Route::post('/guarantees/delete-item-selected', [FrontendController::class, 'deleteSelectedGuaranteeItems'])->name('guaranteeItems.destroy.selected');
+            Route::get('/guarantees', [FrontendController::class, 'guaranteeIndex'])->name('guarantees.index');
+            Route::post('/guarantees', [FrontendController::class, 'guaranteeStore'])->name('guarantees.store');
+            Route::post('/guarantees/item', [FrontendController::class, 'guaranteeItemStore'])->name('guaranteeItems.store');
+            Route::post('/guarantees/{guaranteeItem}/update', [FrontendController::class, 'guaranteeItemUpdate'])->name('guaranteeItems.update');
+
+            Route::get('/communities/items/all', [FrontendController::class, 'getListCommunityItems'])->name('communityItems.list');
+            Route::post('/communities/delete-item-selected', [FrontendController::class, 'deleteSelectedCommunityItems'])->name('communityItems.destroy.selected');
+            Route::get('/communities', [FrontendController::class, 'communityIndex'])->name('communities.index');
+            Route::post('/communities', [FrontendController::class, 'communityStore'])->name('communities.store');
+            Route::post('/communities/item', [FrontendController::class, 'communityItemStore'])->name('communityItems.store');
+            Route::post('/communities/{communityItem}/update', [FrontendController::class, 'communityItemUpdate'])->name('communityItems.update');
+
         });
     });
 });
 
-Route::middleware('auth')->prefix('admin/auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Route::middleware('auth')->prefix('admin/auth')->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// });
+
+
+Route::get('/assets/country/{code}/flags', function (Request $req, $code) {
+    $lower_code = strtolower($code);
+    // return $req->is_online_icon;
+        // return "https://flagcdn.com/w40/{$lower_code}.png";
+        // $response = Http::get($onlinePath);
+        // if ($response->successful()) {
+        //     return Response::make($response->body(), 200, [
+        //         'Content-Type' => 'image/png',
+        //     ]);
+        // }
+    $code = strtoupper($code);
+    $localPath = resource_path("js/country/flags/{$code}.svg");
+    if (!file_exists($localPath)) {
+        return Response::file(public_path('assets/images/tim-dev.png'), [
+            'Content-Type' => 'image',
+        ]);
+    }
+    return Response::file($localPath, [
+        'Content-Type' => 'image/svg+xml',
+    ]);
+})->name('country.flag.code');
+
+Route::get('/link', function() {
+    
+    $storagePath = "/home1/obbivemy/admin_reachautoimport_files/storage/app/public";
+    $linkPath = "/home1/obbivemy/admin.reachautoimport/storage";
+
+    // Check if the link already exists
+    if (file_exists($linkPath)) {
+        return response()->json(['message' => 'The symbolic link already exists.'], 400);
+    }
+
+    // Create the symbolic link
+    $command = "ln -s $storagePath $linkPath";
+    exec($command, $output, $returnVar);
+
+    if ($returnVar === 0) {
+        return response()->json(['message' => 'Symbolic link created successfully.']);
+    } else {
+        Log::error('Failed to create symbolic link', ['output' => $output, 'returnVar' => $returnVar]);
+        return response()->json(['message' => 'Failed to create symbolic link.'], 500);
+    }
+    echo 'ok';
 });
 
+Route::get('/link-storage', function () {
+    Artisan::call('storage:link');
+    return 'Storage link created successfully!';
+});
+Route::get('/clear', function () {
+    Artisan::call('optimize:clear');
+    return 'Application cache cleared and optimized successfully!';
+});
+Route::fallback(fn() => Inertia::render('Errors/404'));
 require __DIR__.'/auth.php';

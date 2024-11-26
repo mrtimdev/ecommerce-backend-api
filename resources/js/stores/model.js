@@ -14,7 +14,7 @@ export const useModel = defineStore('model', () => {
         code: '',
         name: '',
         brand_id: '',
-        is_active: 1,
+        is_active: true,
         is_save_and_more: false,
     })
 
@@ -60,7 +60,7 @@ export const useModel = defineStore('model', () => {
         form.code = ''
         form.name = ''
         form.brand_id = ''
-        form.is_active = 1
+        form.is_active = true
         form.errors = {}
     }
 

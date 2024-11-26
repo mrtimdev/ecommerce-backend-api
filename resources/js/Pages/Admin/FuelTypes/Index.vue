@@ -1,6 +1,6 @@
 <template>
   <DefaultLayout>
-    <Head :title="$t('fuelTypes')" />
+    <Head :title="$t('fuel_types')" />
     <div class="container">
       <div
         class="content-header rounded-tl-md rounded-tr-md p-5 border-b bg-white dark:border-gray-700 dark:bg-boxdark-1 flex flex-grow items-center justify-between"
@@ -38,7 +38,8 @@
                     class="check-all-row w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-boxdark-1 dark:border-gray-600"
                   />
                 </th>
-                <th class="w-[70%]">{{ $t("name") }}</th>
+                <th class="w-[30%]">{{ $t("code") }}</th>
+                <th class="w-[40%]">{{ $t("name") }}</th>
                 <th class="w-[17%]">{{ $t("status") }}</th>
                 <th class="w-[10%] action-col">{{ $t("actions") }}</th>
               </tr>
@@ -81,13 +82,13 @@ const tableData = ref(false);
 
 const openModalForm = () => {
   events.emit('modal:open', {
-    modal_title: "fuelType.add",
+    modal_title: "fuel_type.add",
     event_type: "add",
   });
 }
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
-  { label: t("fuelTypes"), url: null },
+  { label: t("fuel_types"), url: null },
   { label: t("list"), url: null, is_active: true },
 ]);
 
@@ -138,6 +139,7 @@ onMounted(() => {
           return checkBoxHtml;
         },
       },
+      { data: "code", name: "code" },
       { data: "name", name: "name" },
       {
         data: "is_active",
@@ -145,8 +147,7 @@ onMounted(() => {
         orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          const status = parseInt(data) == 1 ? "active" : "inactive";
-          return statusFormat(status);
+          return statusFormat(data ? "active" : "inactive");
         },
       },
       {
@@ -176,7 +177,7 @@ onMounted(() => {
                           onClick: (e) => {
                             e.preventDefault();
                             events.emit('modal:open', {
-                              modal_title: "fuelType.edit",
+                              modal_title: "fuel_type.edit",
                               event_type: "edit",
                               item: row
                             });

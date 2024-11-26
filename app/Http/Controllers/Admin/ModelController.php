@@ -29,7 +29,7 @@ class ModelController extends Controller
     {
         $validated = $request->validate([
             'code' => 'required|string|max:100|regex:/^[^\s]+$/|unique:models,code',
-            'name' => 'required|string|max:191|unique:models,name',
+            'name' => 'required|string|max:191',
             'brand_id' => 'required|exists:brands,id',
             'is_active' => ['required', 'boolean'],
         ]);
@@ -63,7 +63,6 @@ class ModelController extends Controller
                 'required',
                 'string',
                 'max:191',
-                Rule::unique('models', 'name')->ignore($model->id), 
             ],
             'brand_id' => 'required',
             'is_active' => ['required', 'boolean'],
@@ -96,5 +95,17 @@ class ModelController extends Controller
                 ->addIndexColumn()
                 ->make(true);
         }
+    }
+
+    public function getModelsByBrand(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:brands,id',
+        ]);
+        $models = Model::whereIn('brand_id', $request->input('ids'))->get();  
+        return response()->json([
+            'models' => $models
+        ]);
     }
 }

@@ -27,7 +27,7 @@
 
       <div class="content-body p-5">
         <div class="relative">
-          <table id="car-brand" class="table w-full text-sm text-left rtl:text-right">
+          <table id="brands" class="table w-full text-sm text-left rtl:text-right">
             <thead class="text-center bg-white dark:bg-boxdark">
               <tr>
                 <th class="w-[3%]">
@@ -62,35 +62,33 @@ import CheckBox from "@/Components/Others/CheckBox.vue";
 import ActionButtons from "@/Components/Others/ActionButtons.vue";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
 import { onMounted, onBeforeUnmount, reactive, h, createApp, ref } from "vue";
-import useBrands from "@/composables/useBrands";
+import { useBrand } from "@/stores/brand";
 import { i18n } from "@/i18n";
 import { useEventBus } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
-import { nextTick, watch } from "vue";
+import { watch } from "vue";
 import useHelper from "@/composables/useHelper";
 const { statusFormat, imageFormat } = useHelper();
 
 import { useMainStore } from "@/stores/main";
+import { events } from "@/events";
 
 const mainStore = useMainStore();
 
 const { t } = useI18n();
 const tableData = ref(false);
 
-const { emit: closePopup } = useEventBus("popup:close");
-const { on: actionConfirmed } = useEventBus("action:confirmed");
-const { emit: openConfirmPopUp } = useEventBus("confirm:open");
 
-const { deleteBrand } = useBrands();
+const brandStore = useBrand();
 
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
-  { label: t("cars"), url: "/cars" },
-  { label: t("brands"), url: null, is_active: true },
+  { label: t("brands"), url: null },
+  { label: t("list"), url: null, is_active: true },
 ]);
 
 onMounted(() => {
-  tableData.value = $("#car-brand").DataTable({
+  tableData.value = $("#brands").DataTable({
     processing: true,
     serverSide: true,
     pageLength: 10,
@@ -111,7 +109,7 @@ onMounted(() => {
         className: "checkbox-col",
         render: function (data, type, row, meta) {
           const checkBoxHtml = `<div id="checkbox-${row.id}"></div>`;
-          nextTick(() => {
+          setTimeout(() => {
             const container = document.getElementById(`checkbox-${row.id}`);
             if (container.__vueApp__) {
               container.__vueApp__.unmount();
@@ -119,10 +117,10 @@ onMounted(() => {
             const checkBoxApp = createApp({
               render() {
                 return h(CheckBox, {
-                  modelValue: false,
                   class: "check-row",
                   value: parseInt(row.id),
-                  "onUpdate:modelValue": (checked) =>
+                  checked: false,
+                  "onUpdate:checked": (checked) =>
                     mainStore.onCheckRow(checked, parseInt(row.id)),
                 });
               },
@@ -130,13 +128,12 @@ onMounted(() => {
 
             container.__vueApp__ = checkBoxApp;
             checkBoxApp.use(i18n).mount(container);
-          });
+          }, 0);
           return checkBoxHtml;
         },
       },
       {
-        data: "image_path",
-        name: "image_path",
+        data: "image_full_path",
         orderable: false,
         searchable: false,
         className: "action-col text-center",
@@ -153,7 +150,7 @@ onMounted(() => {
         orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          const status = parseInt(data) == 1 ? "active" : "inactive";
+          const status = (data) ? "active" : "inactive";
           return statusFormat(status);
         },
       },
@@ -164,7 +161,7 @@ onMounted(() => {
         className: "action-col",
         render: function (data, type, row, meta) {
           const actionsHtml = `<div id="actions-${row.id}"></div>`;
-          nextTick(() => {
+          setTimeout(() => {
             const container = document.getElementById(`actions-${row.id}`);
             if (container.__vueApp__) {
               container.__vueApp__.unmount();
@@ -192,7 +189,10 @@ onMounted(() => {
                         {
                           class:
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: () => btnDelete(row),
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("confirm:open", [row.id]);
+                          },
                         },
                         [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
                       ),
@@ -203,34 +203,32 @@ onMounted(() => {
             });
             container.__vueApp__ = actionsApp;
             actionsApp.use(i18n).mount(container);
-          });
+          }, 0);
           return actionsHtml;
         },
       },
     ],
   });
-  actionConfirmed((item, action) => {
-    deleteBrand(item, action);
-    closePopup();
-    tableData.value.ajax.reload();
-    mainStore.clearSelectedRows();
-  });
+
 });
 
-
-function btnDelete(item) {
-  openConfirmPopUp({
-    data: item,
-    action: "delete",
-  });
-}
+events.on("modal:success", () => {
+  tableData.value.ajax.reload();
+});
 
 const btnDeleteSelected = () => {
-  openConfirmPopUp({
-    data: mainStore.selectedRows.length > 0 ? mainStore.selectedRows : false,
-    action: t("delete-selected"),
-  });
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
+  events.emit("confirm:open", items);
 };
+
+events.on("confirm:confirmed", (data) => {
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : data;
+  brandStore.deleteBrands(items);
+});
+events.on("confirm:success", () => {
+  tableData.value.ajax.reload();
+  mainStore.clearSelectedRows();
+});
 
 onBeforeUnmount(() => mainStore.clearSelectedRows());
 

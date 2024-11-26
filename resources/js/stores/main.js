@@ -18,9 +18,19 @@ export const useMainStore = defineStore('mainStore', () => {
     // check box for get item value
     const selectedRows = ref([]);
     const checkAll = ref(false);
+    const setting = ref({});
     const {
         locale
     } = useI18n();
+
+    const inputClasses = ref([
+        "bg-gray-50", "border", "border-gray-300", "text-gray-900", 
+        "text-sm", "rounded-lg", "focus:ring-purple-500", 
+        "focus:border-purple-500", "block", "w-full", "p-2.5", 
+        "dark:bg-boxdark-1", "dark:border-gray-600", 
+        "dark:placeholder-gray-400", "dark:text-white", 
+        "dark:focus:ring-purple-500", "dark:focus:border-purple-500"
+    ]);
 
     const initParticle = () => {
         Particles.init({
@@ -67,23 +77,30 @@ export const useMainStore = defineStore('mainStore', () => {
         });
     }
     const onCheckRow = (is_checked, id) => {
-        console.log({is_checked, id})
         if (is_checked) {
             if (!selectedRows.value.includes(id)) {
                 selectedRows.value.push(id);
             }
         } else {
             selectedRows.value = selectedRows.value.filter(val => parseInt(val) !== parseInt(id));
-            console.log('selectedRows: ', selectedRows.value);
         }
         const totalCheckboxes = document.querySelectorAll('.check-row').length;
         const checkedCheckboxes = document.querySelectorAll('.check-row:checked').length;
         checkAll.value = checkedCheckboxes === totalCheckboxes && totalCheckboxes > 0;
-        // console.log('checked row', selectedRows.value);
     }
     const clearSelectedRows = () => {
         selectedRows.value = [];
         checkAll.value = false; 
+        const checkboxes = document.querySelectorAll('.check-row');
+        checkboxes.forEach(function (checkbox) {
+            checkbox.checked = checkAll.value;
+        });
+    }
+
+    const loadSetting = () => {
+        axios.get(route('settings.info')).then((res) => {
+            setting.value = res.data.data
+        })
     }
 
 
@@ -97,6 +114,9 @@ export const useMainStore = defineStore('mainStore', () => {
         onCheckRow,
         selectedRows,
         checkAll,
-        clearSelectedRows
+        clearSelectedRows,
+        loadSetting,
+        setting,
+        inputClasses
     }
 })

@@ -32,7 +32,7 @@
                       <select v-model=" modelStore.form.brand_id "
                       id="brand"
                       class="bg-gray-50 border  border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500">
-                      <option selected value="">{{ $t('select_brand') }}</option>
+                      <option disabled value="">{{ $t('select_brand') }}</option>
                         <option v-for="(brand, index) in modelStore.brands" :key="index" :value="brand.id">{{ brand.name }}</option>
                     </select>
                     <InputError :message=" modelStore.form.errors.brand_id " class="mt-2" />
@@ -42,9 +42,9 @@
                     <select v-model=" modelStore.form.is_active "
                       id="status"
                       class="bg-gray-50 border  border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500">
-                      <option selected value=""> {{ $t('select_status') }}</option>
-                      <option value="1">{{ $t('active') }}</option>
-                      <option value="0">{{ $t('inactive') }}</option>
+                      <option disabled> {{ $t('select_status') }}</option>
+                      <option :value="true">{{ $t('active') }}</option>
+                      <option :value="false">{{ $t('inactive') }}</option>
                     </select>
                     <InputError :message=" modelStore.form.errors.is_active " class="mt-2" />
                   </div>
@@ -92,7 +92,6 @@
   events.on('modal:open', (data) => {
     modal_title.value = data.modal_title || 'model.add'
     isVisible.value = true
-    modelStore.isSuccess = false
     modelStore.checkEvent(data)
     nextTick(() => {
       code.value.focus()

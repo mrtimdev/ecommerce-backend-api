@@ -89,8 +89,8 @@ const openModalForm = () => {
 }
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
-  { label: t("cars"), url: "/cars" },
-  { label: t("models"), url: null, is_active: true },
+  { label: t("models"), url: null },
+  { label: t("list"), url: null, is_active: true },
 ]);
 
 
@@ -117,7 +117,7 @@ onMounted(() => {
         className: "checkbox-col",
         render: function (data, type, row, meta) {
           const checkBoxHtml = `<div id="checkbox-${row.id}"></div>`;
-          nextTick(() => {
+          setTimeout(() => {
             const container = document.getElementById(`checkbox-${row.id}`);
             if (container.__vueApp__) {
               container.__vueApp__.unmount();
@@ -136,7 +136,7 @@ onMounted(() => {
 
             container.__vueApp__ = checkBoxApp;
             checkBoxApp.use(i18n).mount(container);
-          });
+          }, 0);
           return checkBoxHtml;
         },
       },
@@ -149,8 +149,7 @@ onMounted(() => {
         orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          const status = parseInt(data) == 1 ? "active" : "inactive";
-          return statusFormat(status);
+          return statusFormat(data ? "active" : "inactive");
         },
       },
       {
@@ -160,7 +159,7 @@ onMounted(() => {
         className: "action-col",
         render: function (data, type, row, meta) {
           const actionsHtml = `<div id="actions-${row.id}"></div>`;
-          nextTick(() => {
+          setTimeout(() => {
             const container = document.getElementById(`actions-${row.id}`);
             if (container.__vueApp__) {
               container.__vueApp__.unmount();
@@ -208,7 +207,7 @@ onMounted(() => {
             });
             container.__vueApp__ = actionsApp;
             actionsApp.use(i18n).mount(container);
-          });
+          }, 0);
           return actionsHtml;
         },
       },

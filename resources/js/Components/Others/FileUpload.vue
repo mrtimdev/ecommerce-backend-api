@@ -74,6 +74,8 @@
 import { ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { events } from '@/events'
+
 // Props
 const props = defineProps({
   multiple: { type: Boolean, default: false },
@@ -100,7 +102,10 @@ const handleFileChange = (event) => {
   if (!props.multiple) {
     const file = files[0];
     image_path.value = file;
-    selectedImage.value = URL.createObjectURL(file);
+    if(file) {
+      selectedImage.value = URL.createObjectURL(file);
+    }
+    
     emit('update:modelValue', file);
   } else {
     image_path.value = files;
@@ -125,6 +130,11 @@ const removeImage = () => {
   image_path.value = null;
   selectedImage.value = null;
 };
+
+events.on('clear-selected-file', () => {
+  removeImage()
+})
+
 </script>
 
 <style scoped>

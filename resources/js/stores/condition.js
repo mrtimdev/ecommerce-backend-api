@@ -12,7 +12,7 @@ import { ref } from 'vue'
 export const useCondition = defineStore('condition', () => {
     const form = useForm({
         name: '',
-        is_active: 1,
+        is_active: true,
     })
 
     const modal_title = ref('condition.add')
@@ -49,7 +49,7 @@ export const useCondition = defineStore('condition', () => {
         form.code = ''
         form.name = ''
         form.brand_id = ''
-        form.is_active = 1
+        form.is_active = true
         form.errors = {}
     }
 

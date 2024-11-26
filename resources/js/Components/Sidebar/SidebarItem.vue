@@ -25,7 +25,7 @@ const handleItemClick = () => {
         :class="{ 'bg-gray-600 bg-active': sidebarStore.page === item.label }"
         :aria-expanded="sidebarStore.page === item.label"
     >
-        <span class="menu-icon" v-html="item.icon"></span>
+        <span class="menu-icon  flex items-center" v-html="item.icon"></span>
         <span class="menu-label">{{ item.label }}</span>
         <svg
             class="menu-icon absolute right-4 top-1/2 -translate-y-1/2 fill-current"
@@ -51,7 +51,7 @@ const handleItemClick = () => {
         @click.prevent="handleItemClick"
         :class="{ 'bg-gray-600 bg-active': sidebarStore.page === item.label }"
     >
-        <span class="menu-icon" v-html="item.icon"></span>
+        <span class="menu-icon flex items-center" v-html="item.icon"></span>
         <span class="menu-label">{{ item.label }}</span>
     </Link>
 
