@@ -33,5 +33,10 @@ class Category extends Model
         return $this->is_active ? 'active' : 'inactive';
     }
 
+    public function cars()
+    {
+        return $this->hasMany(Car::class);
+    }
+
 
 }

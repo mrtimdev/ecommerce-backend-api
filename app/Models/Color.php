@@ -9,7 +9,7 @@ class Color extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'name', 'description'];
+    protected $fillable = ['hex', 'code', 'name', 'description'];
 
     public $timestamps = false;
 

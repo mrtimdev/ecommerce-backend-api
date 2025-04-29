@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'backend.access' => \App\Http\Middleware\BackendAccess::class,
             'frontend.access' => \App\Http\Middleware\FrontendAccess::class,
+            'email.verified' => \App\Http\Middleware\Frontend\CheckEmailVerified::class,
         ]);
         $middleware->statefulApi();
         

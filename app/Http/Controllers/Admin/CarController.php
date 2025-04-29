@@ -19,6 +19,7 @@ use App\Models\Condition;
 use App\Models\DriveType;
 use App\Models\Passenger;
 use Illuminate\Http\Request;
+use App\Models\CarsLikeCount;
 use App\Models\TransmissionType;
 use Yajra\DataTables\DataTables;
 use App\Http\Controllers\Controller;
@@ -34,11 +35,23 @@ class CarController extends Controller
 {
     public function index(Request $request)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Cars/Index');
     }
 
     public function create()
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('car-add')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Cars/Create', [
             'categories' => Category::all(),
             'conditions' => Condition::all(),
@@ -52,7 +65,21 @@ class CarController extends Controller
             'steerings' => Steering::all(),
             'hot_marks' => HotMark::all(),
             'options' => Option::all(),
+            'group_options' => Option::getGroupedOptions(),
             'locations' => Location::all(),
+        ]);
+    }
+
+    public function handleSourceLink(Request $request)
+    {
+        $request->validate([
+            'sourced_link' => 'nullable|url|unique:cars,sourced_link',
+        ]);
+    }
+    public function handleSourceLinkEdit(Request $request, Car $car)
+    {
+        $request->validate([
+            'sourced_link' => 'nullable|url|unique:cars,sourced_link,' . $car->id,
         ]);
     }
 
@@ -75,6 +102,7 @@ class CarController extends Controller
             'mileage' => $request->mileage,
             'description' => $request->description,
             'is_featured' => $request->is_featured,
+            'featured_at' => $request->is_featured ? now() : null,
             'is_active' => $request->is_active,
             'featured_image' => $featured_image,
             'engine_volume' => $request->engine_volume,
@@ -159,6 +187,7 @@ class CarController extends Controller
             'mileage' => $request->mileage,
             'description' => $request->description,
             'is_featured' => $request->is_featured,
+            'featured_at' => $request->is_featured ? now() : null,
             'is_active' => $request->is_active,
             'engine_volume' => $request->engine_volume,
             'door' => $request->door,
@@ -234,6 +263,12 @@ class CarController extends Controller
 
     public function edit(Request $request, Car $car)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('car-edit')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Cars/Edit', [
             'car' => $car,
             'categories' => Category::all(),
@@ -248,6 +283,7 @@ class CarController extends Controller
             'steerings' => Steering::all(),
             'hot_marks' => HotMark::all(),
             'options' => Option::all(),
+            'group_options' => Option::getGroupedOptions(),
             'locations' => Location::all(),
 
             'category' => $car->category,
@@ -263,6 +299,48 @@ class CarController extends Controller
             'car_hot_marks' => $car->hot_marks,
             'car_options' => $car->options,
             'location' => $car->location,
+            'car_model_options' => $car->getCarOptionsByGroupWithDetail()
+        ]);
+    }
+
+    public function getCarModelOptions(Request $request, $car_id = null)
+    {
+        $car = Car::with(['options.group'])->find($car_id);  // Get car by car_id
+
+        // If the car exists, get options for that car and group them by group_id
+        $carOptionsWithGroups = $car ? $car->options->groupBy(fn($option) => $option->group->id ?? 'no_group')
+            ->map(fn($group) => [
+                'group_id' => $group->first()->group->id ?? null,
+                'group_name' => $group->first()->group->name ?? 'No Group',
+                'items' => $group->map(fn($option) => [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                ])->values(),
+            ])->values() : collect();
+
+        // Retrieve model options with their groups (similar to before)
+        $model = Model::with(['options.group'])->find($request->model_id);
+        $modelOptionsWithGroups = $model ? $model->options->groupBy(fn($option) => $option->group->id ?? 'no_group')
+            ->map(fn($group) => [
+                'group_id' => $group->first()->group->id ?? null,
+                'group_name' => $group->first()->group->name ?? 'No Group',
+                'items' => $group->map(fn($option) => [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                ])->values(),
+            ])->values() : collect();
+
+        // Combine car options and model options (if any) and sort them
+        $allOptionsWithGroups = $carOptionsWithGroups->merge($modelOptionsWithGroups)->sortBy('group_id')->values();
+
+        // Prepare message
+        $message = $allOptionsWithGroups->map(fn($group) => 
+            "Group: {$group['group_name']} (ID: {$group['group_id']}) has " . $group['items']->count() . " items."
+        )->values();
+
+        return response()->json([
+            'message' => $message,
+            'group_options' => $allOptionsWithGroups,
         ]);
     }
 
@@ -279,16 +357,14 @@ class CarController extends Controller
         }
     }
 
-    public function destroy(Request $request, Car $car)
-    {
-        if ($car->featured_image) {
-            Storage::disk('public')->delete($car->featured_image);
-        }
-    
-        return redirect()->route('cars.index');
-    }
     public function deleteSelected(Request $request)
      {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('car-delete')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $ids = $request->input('ids');
         $cars = Car::whereIn('id', $ids)->get();
         if ($cars->isEmpty()) {
@@ -308,6 +384,7 @@ class CarController extends Controller
 
             $car->hot_marks()->detach();
             $car->options()->detach();
+            CarsLikeCount::where('car_id', $car->id)->delete();
         }
         Car::whereIn('id', $ids)->delete();  
         return redirect()->route('cars.index');
@@ -324,31 +401,39 @@ class CarController extends Controller
     }
     public function getListCars(Request $request)
     {
-        return DataTables::of(Car::with(['category', 'condition', 'brand', 'model', 'fuelType', 'images'])->select([
-            'id',
-            'listing_date',
-            'code',
-            'name',
-            'plate_number',
-            'total_price',
-            'car_price',
-            'year',
-            'mileage',
-            'is_featured',
-            'featured_image',
-            'is_active',
-            'category_id',
-            'condition_id',
-            'brand_id',
-            'model_id',
-            'fuel_type_id',
-            'status',
-            'towing_export_document',
-            'shipping',
-            'tax_import',
-            'clearance',
-            'service'
-        ]))
+        $query = Car::with(['category', 'condition', 'brand', 'model', 'fuelType', 'images'])
+            ->select([
+                'id',
+                'listing_date',
+                'code',
+                'name',
+                'plate_number',
+                'total_price',
+                'car_price',
+                'year',
+                'mileage',
+                'is_featured',
+                'featured_image',
+                'is_active',
+                'category_id',
+                'condition_id',
+                'brand_id',
+                'model_id',
+                'fuel_type_id',
+                'status',
+                'towing_export_document',
+                'shipping',
+                'tax_import',
+                'clearance',
+                'service',
+                'created_by',
+                'sourced_link',
+            ]);
+
+        if (!auth()->user()->hasRole(['owner', 'admin'])) {
+            $query->where('created_by', auth()->id());
+        }
+        return DataTables::of($query)
         ->addIndexColumn()
         ->addColumn('total_price', fn($row) => $row->total_price)
         ->addColumn('category_name', fn($row) => $row->category->name ?? 'N/A')
@@ -408,6 +493,104 @@ class CarController extends Controller
         }
     }
 
+    public function updateSourcedLink(Request $request, Car $car)
+    {
+        $request->validate([
+            'sourced_link' => 'nullable|url|unique:cars,sourced_link,' . $car->id,
+        ]);
+        $car->sourced_link = $request->sourced_link;
+        $car->save();
+        return response()->json([
+            'status' => 'success'
+        ]);
+    }
+
+
+    public function carFeatured(Request $request)
+    {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars-featured')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
+        return Inertia::render('Admin/Cars/Featured', [
+            'cars' => fn () => Car::where('is_featured', 0)->orderBy('id', 'desc')->get(),
+            'featured_count' => fn () => Car::where('is_featured', 1)->count()
+        ]);
+    }
+    
+    public function getCarsFeatured(Request $request)
+    {
+        $query = Car::with(['category', 'condition', 'brand', 'model', 'fuelType', 'images'])
+            ->select([
+                'id',
+                'featured_at',
+                'listing_date',
+                'code',
+                'name',
+                'plate_number',
+                'total_price',
+                'car_price',
+                'year',
+                'mileage',
+                'is_featured',
+                'featured_image',
+                'is_active',
+                'category_id',
+                'condition_id',
+                'brand_id',
+                'model_id',
+                'fuel_type_id',
+                'status',
+                'towing_export_document',
+                'shipping',
+                'tax_import',
+                'clearance',
+                'service',
+                'created_by'
+            ]);
+        $query->where('is_featured', 1);
+        if (!auth()->user()->hasRole(['owner', 'admin'])) {
+            $query->where('created_by', auth()->id());
+        }
+        return DataTables::of($query)
+        ->addIndexColumn()
+        ->addColumn('total_price', fn($row) => $row->total_price)
+        ->addColumn('category_name', fn($row) => $row->category->name ?? 'N/A')
+        ->addColumn('condition_name', fn($row) => $row->condition->name ?? 'N/A')
+        ->addColumn('brand_name', fn($row) => $row->brand->name ?? 'N/A')
+        ->addColumn('model_name', fn($row) => $row->model->name ?? 'N/A')
+        ->addColumn('fuel_type_name', fn($row) => $row->fuelType->name ?? 'N/A')
+        ->addColumn('image_path', fn($row) => $row->images[0]->image_path ?? null)
+        ->make(true);
+    }
+
+    public function addCarFeatured(Request $request)
+    {
+        $request->validate([
+            'car' => 'required|array',
+            'car.id' => 'required|integer|exists:cars,id',
+        ]);
+        if(Car::where('is_featured', 1)->count() >= 20) {
+            return redirect()->route('cars.featured');
+        }
+        $car = Car::where('id', $request->input('car.id'))->first();
+        $car->update(['is_featured' => 1, 'featured_at' => now()]);
+        return redirect()->route('cars.featured');
+    }
+    public function removeCarFeatured(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:cars,id',
+        ]);
+        $car = Car::where('id', $request->input('id'))->first();
+        $car->update(['is_featured' => 0, 'featured_at' => null]);
+        return redirect()->route('cars.featured');
+    }
+
+
+    
 
 
 }

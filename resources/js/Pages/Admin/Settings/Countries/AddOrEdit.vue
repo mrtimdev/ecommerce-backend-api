@@ -15,25 +15,21 @@
         <form @submit.prevent="videoFormSubmit" enctype="multipart/form-data">
           <div class="grid gap-6 md:grid-cols-2 p-4 md:p-5">
             <div class="mb-6">
-              <CountryList id="country" v-model="form.country" />
-              <InputError :message="form.errors.name" class="mt-2" />
+              <Label :isRequired="true" for_id="code"> {{ $t("code") }}</Label>
+              <input
+                type="text"
+                id="code"
+                ref="code"
+                v-model="form.code"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500"
+                :placeholder="$t('code')"
+              />
+              <InputError :message="form.errors.code" class="mt-2" />
             </div>
 
-            <div>
-              <label
-                for="status"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >{{ $t("select_status") }}</label
-              >
-              <select
-                v-model="form.is_active"
-                id="status"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500"
-              >
-                <option :value="true">{{ $t("active") }}</option>
-                <option :value="false">{{ $t("inactive") }}</option>
-              </select>
-              <InputError :message="form.errors.is_active" class="mt-2" />
+            <div class="mb-6">
+              <CountryList id="country" v-model="form.country" />
+              <InputError :message="form.errors.name" class="mt-2" />
             </div>
           </div>
           <div
@@ -106,12 +102,14 @@ events.on("modal:open", (data) => {
     item.value = data.item;
     form.country = {
       name: data.item.name,
-      code: data.item.code,
+      code: data.item.flag_code,
       flag: data.item.flag,
       dial_code: data.item.dial_code,
     };
+    form.code = data.item.code;
   } else {
     form.country = null;
+    form.code = "";
     item.value = false;
   }
   console.log({ data }, form.country);
@@ -127,9 +125,10 @@ const props = defineProps({
 const videoFormSubmit = () => {
   const cForm = useForm({
     name: form.country.name,
-    code: form.country.code,
+    flag_code: form.country.code,
     flag: form.country.flag,
     dial_code: form.country.dial_code,
+    code: form.code,
     is_active: form.is_active,
   });
 

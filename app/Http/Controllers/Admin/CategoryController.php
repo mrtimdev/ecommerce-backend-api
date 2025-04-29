@@ -16,11 +16,23 @@ class CategoryController extends Controller
 {
     public function index(Request $request)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars-categories')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Categories/Index');
     }
 
     public function create()
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('categories-add')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Categories/Create');
     }
 
@@ -64,6 +76,12 @@ class CategoryController extends Controller
 
     public function edit(Category $Category)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('categories-edit')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Categories/Edit', ['category' => $Category]);
     }
 
@@ -111,16 +129,14 @@ class CategoryController extends Controller
         return redirect()->route('categories.index');
     }
 
-    public function destroy(Request $request, Category $category)
-    {
-        if ($category->image_path) {
-            Storage::disk('public')->delete($category->image_path);
-        }
-        $category->delete();
-        return redirect()->route('categories.index');
-    }
     public function deleteSelected(Request $request)
      {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('categories-delete')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $ids = $request->input('ids');
         $categories = Category::whereIn('id', $ids)->get();
         if ($categories->isEmpty()) {

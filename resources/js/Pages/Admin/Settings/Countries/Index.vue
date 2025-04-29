@@ -38,6 +38,7 @@
                 class="check-all-row w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-boxdark-1 dark:border-gray-600"
               />
               </th>
+              <th class="w-[5%]">{{ $t('code') }}</th>
               <th class="w-[5%]">{{ $t('flag') }}</th>
               <th class="w-[82%]">{{ $t('name') }}</th>
               <th class="w-[10%] action-col">{{ $t('actions') }}</th>
@@ -124,9 +125,10 @@ onMounted(() => {
           return checkBoxHtml;
         },
       },
+      { data: 'code', name: 'code' },
       {
-        data: "code",
-        name: "code",
+        data: "flag_code",
+        name: "flag_code",
         orderable: false,
         searchable: false,
         className: "action-col text-center",

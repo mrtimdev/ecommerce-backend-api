@@ -25,6 +25,7 @@
                   ref="sourced_link"
                   id="sourced_link"
                   v-model="form.sourced_link"
+                  @change="handleSourcedLinkChange"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-boxdark-1 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-purple-500 dark:focus:border-purple-500 dark:bg-tim-11"
                   :placeholder="$t('sourced_link')"
                 />
@@ -453,6 +454,8 @@
                       :options="models"
                       :multiple="false"
                       track-by="id"
+                      @select="handleModelChange"
+                      @remove="handleModelRemove"
                       :custom-label="(option) => `${option.name}`"
                     >
                     </MultiSelect>
@@ -644,42 +647,45 @@
                 >
                   {{ $t("other_options") }}
                 </legend>
+                <div class="mb-4">
+                  <Label
+                    for_id="hot_marks"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                    >{{ $t("hot_marks") }}
+                  </Label>
+                  <MultiSelect
+                    id="hot_mark"
+                    v-model="form.hot_marks"
+                    :options="hot_marks"
+                    :multiple="true"
+                    track-by="id"
+                    :custom-label="(option) => `${option.name}`"
+                  >
+                  </MultiSelect>
+                  <InputError :message="form.errors.hot_marks" class="mt-2" />
+                </div>
+
                 <div
-                  class="grid gap-6 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2"
+                  class="grid gap-6 grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-3"
                 >
-                  <div>
-                    <Label
-                      for_id="hot_marks"
-                      class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >{{ $t("hot_marks") }}
-                    </Label>
-                    <MultiSelect
-                      id="hot_mark"
-                      v-model="form.hot_marks"
-                      :options="hot_marks"
-                      :multiple="true"
-                      track-by="id"
-                      :custom-label="(option) => `${option.name}`"
-                    >
-                    </MultiSelect>
-                    <InputError :message="form.errors.hot_marks" class="mt-2" />
-                  </div>
-                  <div>
+                  <div
+                    v-for="(group_option, index) in carStore.groupOptions"
+                    :key="index"
+                  >
                     <Label
                       for_id="options"
                       class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >{{ $t("options") }}
+                      >{{ group_option.group_name }}
                     </Label>
                     <MultiSelect
-                      id="option"
-                      v-model="form.options"
-                      :options="options"
+                      :id="'options_group_' + group_option.group_id"
+                      v-model="options_form['options_group_' + group_option.group_id]"
+                      :options="group_option.items"
                       :multiple="true"
                       track-by="id"
                       :custom-label="(option) => `${option.name}`"
                     >
                     </MultiSelect>
-                    <InputError :message="form.errors.options" class="mt-2" />
                   </div>
                 </div>
               </fieldset>
@@ -988,7 +994,9 @@ const { formatMoney } = useHelper();
 
 import { events } from "@/events";
 import { useMainStore } from "@/stores/main";
+import { useCar } from "@/stores/car";
 const mainStore = useMainStore();
+const carStore = useCar();
 
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
@@ -1047,12 +1055,16 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  group_options: {
+    type: Array,
+    required: true,
+  },
   locations: {
     type: Array,
     required: true,
   },
 });
-const statuses = ["available", "booked", "sold"];
+const statuses = ["available", "requesting", "booked", "sold"];
 const form = useForm({
   sourced_link: "",
   listing_date: "",
@@ -1096,7 +1108,7 @@ const form = useForm({
   steering: null,
   location: null,
   hot_marks: [],
-  options: props.options,
+  options: [],
   size: "",
   status: "available",
   is_save_and_more: false,
@@ -1112,6 +1124,7 @@ const form = useForm({
   third_payment: 0,
 });
 
+let options_form = ref({});
 const total_price = ref(0);
 
 watch(
@@ -1139,18 +1152,20 @@ watch(
   }
 );
 
-const handleSubmit = () => {
-  form.post(route("cars.store"), {
+const sl_form = useForm({
+  sourced_link: "",
+});
+
+const handleSourcedLinkChange = (e) => {
+  sl_form.sourced_link = form.sourced_link;
+  sl_form.post(route("cars.handle-source-link"), {
     preserveScroll: true,
     onSuccess: (res) => {
-      events.emit("toaster", {
-        type: "success",
-        action: "create",
-        message: `${t("car")} [${form.name}] ${t("successfully_added")}`,
-      });
-      form.reset("code", "name");
+      form.clearErrors("sourced_link");
     },
-    onError: () => {},
+    onError: () => {
+      form.setError("sourced_link", sl_form.errors.sourced_link);
+    },
   });
 };
 
@@ -1164,9 +1179,34 @@ const handleBrandChange = (brand) => {
   }
 };
 
+const handleModelChange = (model) => {
+  form.options = [];
+  if (model) {
+    axios.get(route("models.options", { model_id: model.id })).then((res) => {
+      carStore.setGroupOptions(res.data.group_options);
+      console.log({ res });
+      if (carStore.groupOptions) {
+        carStore.groupOptions.forEach((group_option) => {
+          options_form.value[`options_group_${group_option.group_id}`] =
+            group_option.items;
+        });
+      }
+    });
+  }
+};
+
 const handleBrandRemove = (brand) => {
   models.value = [];
   form.model = [];
+};
+const handleModelRemove = (model) => {
+  form.options = [];
+  if (props.group_options) {
+    options_form.value = props.group_options.map(
+      (group_option) =>
+        (options_form.value[`options_group_${group_option.group_id}`] = [])
+    );
+  }
 };
 
 onMounted(() => {
@@ -1177,7 +1217,38 @@ onMounted(() => {
     Array.from(document.querySelectorAll(".multiselect__input")).forEach((element) => {
       element.classList.add(...mainStore.inputClasses);
     });
-    form.options = props.options;
+    // form.options = props.options;
+
+    if (props.group_options) {
+      options_form.value = props.group_options.map(
+        (group_option) =>
+          (options_form.value[`options_group_${group_option.group_id}`] = [])
+      );
+    }
+    carStore.getGroupOptions();
   });
 });
+
+const handleSubmit = () => {
+  var pg = carStore.groupOptions.map((group_option) =>
+    options_form.value["options_group_" + group_option.group_id]
+      ? options_form.value["options_group_" + group_option.group_id]
+      : []
+  );
+  console.log({ pg }, { options_form });
+  var op = pg.flat();
+  form.options = op;
+  form.post(route("cars.store"), {
+    preserveScroll: true,
+    onSuccess: (res) => {
+      events.emit("toaster", {
+        type: "success",
+        action: "create",
+        message: `${t("car")} [${form.name}] ${t("successfully_added")}`,
+      });
+      form.reset("code", "name");
+    },
+    onError: () => {},
+  });
+};
 </script>

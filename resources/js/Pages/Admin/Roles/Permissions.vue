@@ -17,10 +17,10 @@
           <template #body>
             <form @submit.prevent="submitForm">
               <div class="p-4 md:p-5">
-                <div>
+                <div class="mb-2">
                   <span
                     >{{ $t("permissions_for") }}
-                    <span class="!text-purple-500">{{ role.name }}</span></span
+                    <span class="!text-purple-500">: {{ role.name }}</span></span
                   >
                 </div>
                 <div class="grid gap-6 mb-6 md:grid-cols-2">
@@ -34,7 +34,8 @@
                       type="checkbox"
                       :id="'permissions_' + index"
                       :value="permission.id"
-                      v-model="form.permissions"
+                      :checked="permission.assigned"
+                      @change="handleChange"
                       class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-boxdark-1 dark:border-gray-600"
                       :placeholder="$t('permissions')"
                     />
@@ -69,6 +70,7 @@
 </template>
 
 <script setup>
+import CheckBox from "@/Components/Others/CheckBox.vue";
 import { Head, router, useForm } from "@inertiajs/vue3";
 import { onMounted, watch, ref, nextTick } from "vue";
 import { events } from "@/events";
@@ -108,6 +110,31 @@ const submitForm = () => {
       form.reset();
     },
   });
+};
+
+onMounted(() => {
+  for (const p of props.permissions) {
+    if (p.assigned) {
+      form.permissions.push(parseInt(p.id));
+    }
+
+    console.log(p);
+  }
+});
+
+const handleChange = (e) => {
+  const p = form.permissions;
+  const value = parseInt(e.target.value);
+  const is_checked = e.target.checked;
+  if (is_checked) {
+    if (!form.permissions.includes(value)) {
+      form.permissions.push(value);
+    }
+  } else {
+    form.permissions = form.permissions.filter(
+      (val) => parseInt(val) !== parseInt(value)
+    );
+  }
 };
 
 const closeModal = () => {

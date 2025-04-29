@@ -9,6 +9,11 @@ class HotMark extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['code', 'name'];
     public $timestamps = false;
+
+    public function cars()
+    {
+        return $this->belongsToMany(Car::class, 'car_hot_marks', 'hot_mark_id', 'car_id');
+    }
 }

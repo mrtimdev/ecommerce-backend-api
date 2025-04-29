@@ -17,12 +17,18 @@ class RoleController extends Controller
 {
     public function index(Request $request)
     {
+        if(!auth()->user()->hasRole('owner')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Roles/Index');
     }
     public function getRolesList(Request $request)
     {
         if ($request->ajax()) {
-            $data = Role::orderBy('id', 'desc')->get();
+            $data = Role::with(['permissions'])->orderBy('id', 'desc')->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->make(true);
@@ -84,10 +90,19 @@ class RoleController extends Controller
 
     public function permissions(Request $request, Role $role)
     {
+        $permissions = Permission::all(['id', 'name', 'display_name'])
+            ->map(function ($permission) use ($role) {
+                $permission->assigned = $role->permissions
+                    ->pluck('id')
+                    ->contains($permission->id);
+
+                return $permission;
+            });
         return Inertia::render('Admin/Roles/Permissions', [
             'show_modal' => true,
             'role' => fn() => $role,
-            'permissions' => fn() => Permission::all(),
+            'assigned_permissions' => fn() => $role->permissions,
+            'permissions' => fn() => $permissions,
         ]);
     }
 }

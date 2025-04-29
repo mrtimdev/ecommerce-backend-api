@@ -25,7 +25,7 @@ class Location extends Model
 
     public function getFlagUrlAttribute(): string
     {
-        $code = strtolower($this->code);
+        $code = strtolower($this->flag_code);
       return "https://flagcdn.com/w40/{$code}.png";
     }
     public function getLocalFlagUrlAttribute()

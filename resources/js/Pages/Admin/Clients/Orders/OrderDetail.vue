@@ -50,6 +50,10 @@
                       <td class="py-2 px-4">{{ order.data.phone }}</td>
                     </tr>
                     <tr>
+                      <td class="py-2 px-4 font-sm">{{ $t("telegram_or_phone") }}:</td>
+                      <td class="py-2 px-4">{{ order.data.telegram_or_phone }}</td>
+                    </tr>
+                    <tr>
                       <td class="py-2 px-4 font-sm">{{ $t("price") }}:</td>
                       <td class="py-2 px-4">{{ formatMoney(order.data.price) }}</td>
                     </tr>
@@ -83,29 +87,27 @@
                   <tbody
                     class="text-gray-700 dark:text-gray-100 bg-white dark:bg-boxdark"
                   >
-                    <tr
-                      v-for="(detail, index) in order.data.order_details"
-                      :key="index"
-                      class="border-b border-gray-300"
-                    >
-                      <td class="py-2 px-4">{{ detail.item_code }}</td>
+                    <tr class="border-b border-gray-300">
+                      <td class="py-2 px-4">{{ order.data.item_code }}</td>
                       <td class="py-2 px-4 text-center">
                         <a
-                          :href="detail.link"
+                          :href="order.data.link"
                           class="hover:underline text-blue-700"
                           target="_blank"
                         >
-                          <i class="fi fi-rr-link"></i> {{ $t("open") }}
+                          <i class="fi fi-rr-link text-[12px]"></i> {{ $t("open") }}
                         </a>
                       </td>
                       <td class="py-2 px-4 text-center">
                         <a
-                          :href="detail.link_korea"
+                          :href="order.data.link_korea"
                           class="hover:underline text-blue-700"
                           target="_blank"
+                          v-if="order.data.link_korea"
                         >
-                          <i class="fi fi-rr-link"></i> {{ $t("open") }}
+                          <i class="fi fi-rr-link text-[12px]"></i> {{ $t("open") }}
                         </a>
+                        <span v-else> No Link </span>
                       </td>
                     </tr>
                   </tbody>
@@ -123,7 +125,6 @@
 import { Head, router } from "@inertiajs/vue3";
 import OrderIndex from "./Index.vue";
 import useHelper from "@/composables/useHelper";
-import { data } from "jquery";
 const { formatDate, formatMoney } = useHelper();
 const props = defineProps({
   show_modal: {

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="upload-container gap-6 mb-6 relative border-2 border-dashed border-gray-400"
+    class="upload-container gap-6 mb-6 relative border-2 border-dashed border-gray-400 rounded-lg"
     @dragover.prevent="toggleDrag(true)"
     @dragleave.prevent="toggleDrag(false)"
     @drop.prevent="handleDrop"
@@ -11,7 +11,9 @@
       :style="{
         'background-image': selectedImage
           ? `url(${selectedImage})`
-          : selectedFile ? `url(/storage/${selectedFile})` : '',
+          : selectedFile
+          ? `url(/storage/${selectedFile})`
+          : '',
         'background-size': 'contain',
         'background-position': 'center',
         'background-repeat': 'no-repeat',
@@ -25,12 +27,16 @@
           class="w-[100px] mb-2 fill-gray-500"
           viewBox="0 0 32 32"
         >
-          <path d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z" />
-          <path d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z" />
+          <path
+            d="M23.75 11.044a7.99 7.99 0 0 0-15.5-.009A8 8 0 0 0 9 27h3a1 1 0 0 0 0-2H9a6 6 0 0 1-.035-12 1.038 1.038 0 0 0 1.1-.854 5.991 5.991 0 0 1 11.862 0A1.08 1.08 0 0 0 23 13a6 6 0 0 1 0 12h-3a1 1 0 0 0 0 2h3a8 8 0 0 0 .75-15.956z"
+          />
+          <path
+            d="M20.293 19.707a1 1 0 0 0 1.414-1.414l-5-5a1 1 0 0 0-1.414 0l-5 5a1 1 0 0 0 1.414 1.414L15 16.414V29a1 1 0 0 0 2 0V16.414z"
+          />
         </svg>
-        <span>{{ t('drop_file_here') }} {{ t('or') }} {{ t('browse_file') }}</span>
+        <span>{{ t("drop_file_here") }} {{ t("or") }} {{ t("browse_file") }}</span>
       </template>
-      <span v-if="multiple && image_path">{{ t('multiple_files_selected') }}</span>
+      <span v-if="multiple && image_path">{{ t("multiple_files_selected") }}</span>
 
       <input
         type="file"
@@ -42,7 +48,7 @@
       />
 
       <p class="text-xs font-medium text-gray-400 mt-2">
-        PNG, JPG, JPEG are allowed.
+        PNG, JPG, JPEG and 2M are allowed.
       </p>
     </label>
 
@@ -52,7 +58,7 @@
       type="button"
       class="remove-button absolute right-0 top-0 z-2"
     >
-    <svg
+      <svg
         class="w-3 h-3"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -71,21 +77,21 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 
-import { events } from '@/events'
+import { events } from "@/events";
 
 // Props
 const props = defineProps({
   multiple: { type: Boolean, default: false },
   modelValue: { type: [File, Array], default: null },
   selectedFile: { type: String, default: null },
-  target_input: { type: String, default: 'upload-input' },
+  target_input: { type: String, default: "upload-input" },
 });
 
 // Emits
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
 // Reactive state
 const image_path = ref(props.modelValue);
@@ -102,15 +108,15 @@ const handleFileChange = (event) => {
   if (!props.multiple) {
     const file = files[0];
     image_path.value = file;
-    if(file) {
+    if (file) {
       selectedImage.value = URL.createObjectURL(file);
     }
-    
-    emit('update:modelValue', file);
+
+    emit("update:modelValue", file);
   } else {
     image_path.value = files;
     selectedImage.value = null;
-    emit('update:modelValue', files);
+    emit("update:modelValue", files);
   }
 };
 
@@ -123,7 +129,10 @@ const handleDrop = (event) => {
 };
 
 // Watch for modelValue changes
-watch(() => props.modelValue, (newValue) => (image_path.value = newValue));
+watch(
+  () => props.modelValue,
+  (newValue) => (image_path.value = newValue)
+);
 
 // Remove selected image
 const removeImage = () => {
@@ -131,10 +140,9 @@ const removeImage = () => {
   selectedImage.value = null;
 };
 
-events.on('clear-selected-file', () => {
-  removeImage()
-})
-
+events.on("clear-selected-file", () => {
+  removeImage();
+});
 </script>
 
 <style scoped>

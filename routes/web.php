@@ -17,12 +17,13 @@ use App\Http\Controllers\Admin\ModelController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FuelTypeController;
+use App\Http\Controllers\Admin\SteeringController;
 use App\Http\Controllers\Admin\ConditionController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DriveTypeController;
 use App\Http\Controllers\Admin\PassengerController;
 use App\Http\Controllers\Admin\OtherOptionController;
 use App\Http\Controllers\Admin\TransmissionTypeController;
-use App\Http\Controllers\Admin\SteeringController;
 
 
 
@@ -30,14 +31,9 @@ Route::post('/admin/locale', [LocaleController::class, 'setLocale']);
 Route::get('/admin/locale', [LocaleController::class, 'getLocale']);
 
 
-Route::get('/', function () {
-    return Inertia::render('Admin/Dashboard/Index');
-})->middleware(['auth', 'verified'])->name('dashboard.home');
+Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard.home');
 
-Route::get('/dashboard', function () {
-    // return Inertia::render('Dashboard');
-    return Inertia::render('Admin/Dashboard/Index');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
 Route::middleware('auth')->prefix('admin')->group(function () {
@@ -48,6 +44,8 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('/cars/delete-selected', [CarController::class, 'deleteSelected'])->name('cars.destroy.selected');
     Route::get('cars/create', [CarController::class, 'create'])->name('cars.create');
     Route::post('cars/store', [CarController::class, 'store'])->name('cars.store');
+    Route::post('cars/handle-source-link', [CarController::class, 'handleSourceLink'])->name('cars.handle-source-link');
+    Route::post('cars/{car}/handle-source-link-edit', [CarController::class, 'handleSourceLinkEdit'])->name('cars.handle-source-link-edit');
     Route::get('cars', [CarController::class, 'index'])->name('cars.index');
     Route::get('cars/{car}/galleries', [CarController::class, 'getGalleries'])->name('cars.galleries');
     Route::get('cars/{car}/show', [CarController::class, 'show'])->name('cars.show');
@@ -56,7 +54,13 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('cars/{car}/update', [CarController::class, 'update'])->name('cars.update');
     Route::post('cars/gallery/{car}/update-gallery', [CarController::class, 'updateGallery'])->name('cars.updateGallery');
     Route::post('cars/gallery/{car}/update-featured-image', [CarController::class, 'updateFeaturedImage'])->name('cars.updateFeaturedImage');
+    Route::post('cars/gallery/{car}/update-sourced-link-image', [CarController::class, 'updateSourcedLink'])->name('cars.updateSourcedLink');
     Route::post('cars/gallery/{carImage}/remove-gallery', [CarController::class, 'removeGallery'])->name('cars.removeGallery');
+
+    Route::get('cars/featured', [CarController::class, 'carFeatured'])->name('cars.featured');
+    Route::get('cars/featured/list', [CarController::class, 'getCarsFeatured'])->name('cars.featured.list');
+    Route::post('cars/featured/store', [CarController::class, 'addCarFeatured'])->name('cars.featured.store');
+    Route::post('cars/featured/remove', [CarController::class, 'removeCarFeatured'])->name('cars.featured.remove');
 
     Route::get('/categories/all', [CategoryController::class, 'getCategories'])->name('categories.list');
     Route::post('/categories/delete-selected', [CategoryController::class, 'deleteSelected'])->name('categories.destroy.selected');
@@ -88,6 +92,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('brands/{brand}/update', [BrandController::class, 'update'])->name('brands.update');
     
     Route::get('/models/by-brands', [ModelController::class, 'getModelsByBrand'])->name('models.by.brand');
+    Route::get('/models/get-options', [ModelController::class, 'getModelOptions'])->name('models.options');
     Route::get('/models/all', [ModelController::class, 'getModels'])->name('models.list');
     Route::post('/models/delete-selected', [ModelController::class, 'deleteSelected'])->name('models.destroy.selected');
     Route::get('models/create', [ModelController::class, 'create'])->name('models.create');
@@ -151,12 +156,13 @@ Route::middleware('auth')->prefix('admin')->group(function () {
             Route::post('/{hotmark}', [OtherOptionController::class, 'hotMarkUpdate'])->name('hotmarks.update');
         });
         Route::prefix('options')->group(function () {
-            Route::get('/all', [OtherOptionController::class, 'getoptions'])->name('options.list');
+            Route::get('/all', [OtherOptionController::class, 'getOptions'])->name('options.list');
             Route::post('/delete-selected', [OtherOptionController::class, 'deleteSelectedoptions'])->name('options.destroy.selected');
             Route::get('/index', [OtherOptionController::class, 'optionIndex'])->name('options.index');
             Route::post('', [OtherOptionController::class, 'optionStore'])->name('options.store');
             Route::post('/{option}', [OtherOptionController::class, 'optionUpdate'])->name('options.update');
         });
+        Route::get('/group/get-with-options', [OtherOptionController::class, 'getGroupOptions'])->name('group.options');
 
         Route::prefix('option-groups')->group(function () {
             Route::get('/all', [OtherOptionController::class, 'getOptionGroups'])->name('optionGroups.list');
@@ -210,6 +216,11 @@ Route::middleware('auth')->prefix('admin')->group(function () {
             Route::get('/contact-us', [FrontendController::class, 'contactUsIndex'])->name('contactus.index');
             Route::post('/contact-us-store', [FrontendController::class, 'storeContactUs'])->name('contactus.store');
             
+            Route::get('/agency-contact/khmer', [FrontendController::class, 'agencyContactKhIndex'])->name('agencycontact-kh.index');
+            Route::get('/agency-contact/korea', [FrontendController::class, 'agencycontactKrIndex'])->name('agencycontact-kr.index');
+            Route::post('/agency-contact-store', [FrontendController::class, 'storeAgencyContact'])->name('agencycontact.store');
+
+            
 
             Route::get('/videos/all', [FrontendController::class, 'getVideos'])->name('videos.list');
             Route::post('/videos/delete-selected', [FrontendController::class, 'deleteSelectedVideos'])->name('videos.destroy.selected');
@@ -245,10 +256,40 @@ Route::middleware('auth')->prefix('admin')->group(function () {
             Route::post('/communities', [FrontendController::class, 'communityStore'])->name('communities.store');
             Route::post('/communities/item', [FrontendController::class, 'communityItemStore'])->name('communityItems.store');
             Route::post('/communities/{communityItem}/update', [FrontendController::class, 'communityItemUpdate'])->name('communityItems.update');
+            Route::get('/communities/{communityItem}/pdf', [FrontendController::class, 'communityItemPdfPreview'])->name('communityItems.pdf-preview');
 
+            Route::get('/community/{communityItem}/download-pdf', [FrontendController::class, 'communityItemDownloadPdf'])->name('community.download.pdf');
+
+
+            # taxinfos
+            Route::get('/taxinfos/items/all', [FrontendController::class, 'getListTaxInfoItems'])->name('taxInfoItems.list');
+            Route::post('/taxinfos/delete-item-selected', [FrontendController::class, 'deleteSelectedTaxInfoItems'])->name('taxInfoItems.destroy.selected');
+            Route::get('/taxinfos', [FrontendController::class, 'taxInfoIndex'])->name('taxInfos.index');
+            Route::post('/taxinfos', [FrontendController::class, 'taxInfoStore'])->name('taxInfos.store');
+            Route::post('/taxinfos/item', [FrontendController::class, 'taxInfoItemstore'])->name('taxInfoItems.store');
+            Route::post('/taxinfos/{taxInfoItem}/update', [FrontendController::class, 'taxinfoItemUpdate'])->name('taxInfoItems.update');
+            Route::post('/taxinfos/{taxInfoItem}/change-status', [FrontendController::class, 'taxinfoItemChangeStatus'])->name('taxInfoItems.change-status');
+            Route::get('/taxinfos/{taxInfoItem}/pdf', [FrontendController::class, 'taxInfoItemPdfPreview'])->name('taxInfoItems.pdf-preview');
+
+            Route::get('/taxinfo/{taxInfoItem}/download-pdf', [FrontendController::class, 'taxInfoItemDownloadPdf'])->name('taxInfo.download.pdf');
+
+
+            # menu car gallery
+            Route::get('/menu_car_gallery/items/all', [FrontendController::class, 'getListMenuCarGalleryItems'])->name('menuCarGalleryItems.list');
+            Route::post('/menu_car_gallery/delete-item-selected', [FrontendController::class, 'deleteSelectedMenuCarGalleryItems'])->name('menuCarGalleryItems.destroy.selected');
+            Route::get('/menu_car_gallery', [FrontendController::class, 'menuCarGalleryIndex'])->name('menuCarGallery.index');
+            Route::post('/menu_car_gallery', [FrontendController::class, 'menuCarGalleryStore'])->name('menuCarGallery.store');
+            Route::post('/menu_car_gallery/item', [FrontendController::class, 'menuCarGalleryItemstore'])->name('menuCarGalleryItems.store');
+            Route::post('/menu_car_gallery/{menuCarGalleryItem}/update', [FrontendController::class, 'menuCarGalleryItemUpdate'])->name('menuCarGalleryItems.update');
+            Route::post('/menu_car_gallery/{menuCarGalleryItem}/change-status', [FrontendController::class, 'menuCarGalleryItemChangeStatus'])->name('menuCarGalleryItems.change-status');
+            Route::get('/menu_car_gallery/{menuCarGalleryItem}/pdf', [FrontendController::class, 'menuCarGalleryItemPdfPreview'])->name('menuCarGalleryItems.pdf-preview');
+
+            Route::get('/menu_car_gallery/{menuCarGalleryItem}/download-pdf', [FrontendController::class, 'menuCarGalleryItemDownloadPdf'])->name('menuCarGallery.download.pdf');
         });
     });
 });
+
+
 
 // Route::middleware('auth')->prefix('admin/auth')->group(function () {
 //     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

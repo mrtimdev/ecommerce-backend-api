@@ -4,7 +4,7 @@ import moment from 'moment';
 export default function useHelper() {
 
     const statusFormat = (status) => {
-        if (status === 'approved' || status === 'active' || status === 'available' || parseInt(status) === 1) {
+        if (status === 'owner' || status === 'approved' || status === 'active' || status === 'available' || parseInt(status) === 1) {
             return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded bg-success text-white">
                 ${status}
             </div>`
@@ -12,16 +12,16 @@ export default function useHelper() {
             return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded bg-red-600 text-white">
                 ${status}
             </div>`
-        } else if (status === 'yes' || status === 'sold') {
+        } else if (status === 'admin' || status === 'yes' || status === 'sold') {
             return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded bg-purple-600 text-white">
                 ${status}
             </div>`
-        } else if (status === 'pending' || status === 'processing') {
+        } else if (status === 'editor' || status === 'user' || status === 'pending' || status === 'processing') {
             return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded bg-yellow-600 text-white">
                 ${status}
             </div>`
         } else {
-            return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded-full bg-gray-600 text-white">
+            return `<div class="capitalize text-xs text-center row-status font-semibold inline-block py-1 px-2 rounded bg-gray-600 text-white">
                 ${status}
             </div>`
         }
@@ -42,14 +42,14 @@ export default function useHelper() {
         if(show_name) {
             return `
                 <div class="flex gap-2 items-center justify-start">
-                    <img src="https://flagcdn.com/w40/${country.code.toLowerCase()}.png"/>
+                    <img src="https://flagcdn.com/w40/${country.flag_code.toLowerCase()}.png"/>
                     <span class="block font-medium mb-0 text-sm text-gray-700 dark:text-white">${country.name}</span>
                 </div>
             `
         }
         return `
             <div class="flex gap-2 items-center justify-center">
-                <img src="https://flagcdn.com/w40/${country.code.toLowerCase()}.png"/>
+                <img src="https://flagcdn.com/w40/${country.flag_code.toLowerCase()}.png"/>
             </div>
         `
     }
@@ -61,7 +61,7 @@ export default function useHelper() {
         return `
 
             <div class="flex gap-2 items-center justify-center">
-                <img src="${route('country.flag.name', { name: `${country.code}.svg` })}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
+                <img src="${route('country.flag.name', { name: `${country.flag_code}.svg` })}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
                 <span class="block font-medium mb-1 text-sm text-gray-700 dark:text-white">${country.name}</span>
             </div>
         `

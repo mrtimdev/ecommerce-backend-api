@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
 use App\Models\Setting;
@@ -33,7 +34,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
-
+        
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

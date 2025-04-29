@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use Storage;
 use Inertia\Inertia;
-use App\Models\HotMark;
+use App\Models\Model;
 use App\Models\Option;
+use App\Models\HotMark;
 use App\Models\OptionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,8 +17,13 @@ class OtherOptionController extends Controller
 {
     public function hotmarkIndex()
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars-hot-marks')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $hotmarks = HotMark::all();
-
         return Inertia::render('Admin/OtherOptions/Pages/Hotmarks/Index', [
             'hotmarks' => $hotmarks,
         ]);
@@ -25,9 +31,11 @@ class OtherOptionController extends Controller
     public function hotmarkStore(Request $request)
     {
         $request->validate([
+            'code' => 'required|string|max:100|unique:hot_marks,code',
             'name' => 'required|string|max:191|unique:hot_marks,name',
         ]);
         Hotmark::create([
+            'code' => $request->code,
             'name' => $request->name,
         ]);
 
@@ -37,6 +45,12 @@ class OtherOptionController extends Controller
     public function hotmarkUpdate(Request $request, Hotmark $hotmark)
     {
         $request->validate([
+            'code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('hot_marks', 'code')->ignore($hotmark->id), 
+            ],
            'name' => [
                 'required',
                 'string',
@@ -45,11 +59,11 @@ class OtherOptionController extends Controller
             ],
         ]);
         $hotmark->update([
+            'code' => $request->code,
             'name' => $request->name,
         ]);
 
-        return redirect()->route('hotmarks.index')
-            ->with('success', 'Hotmark updated successfully.');
+        return redirect()->route('hotmarks.index');
     }
 
     public function deleteSelectedHotmarks(Request $request)
@@ -74,24 +88,39 @@ class OtherOptionController extends Controller
 
     public function optionIndex()
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars-options')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $options = Option::all();
         $optionGroups = OptionGroup::all();
+        $models = Model::all();
         return Inertia::render('Admin/OtherOptions/Pages/Options/Index', [
-            'options' => $options,
-            'optionGroups' => $optionGroups,
+            'options' => fn () => $options,
+            'optionGroups' => fn () => $optionGroups,
+            'models' => fn () => $models,
         ]);
     }
     public function optionStore(Request $request)
     {
         $request->validate([
+            'code' => 'required|string|max:100|unique:options,code',
             'name' => 'required|string|max:191|unique:options,name',
             'option_group' => 'required|array',
             'option_group.id' => 'required|integer|exists:option_groups,id',
+            'models' => 'array',
+            'models.*.id' => 'integer|exists:models,id',
         ]);
-        Option::create([
+        $option = Option::create([
+            'code' => $request->code,
             'name' => $request->name,
             'option_group_id' => $request->input('option_group.id'),
         ]);
+        if ($request->has('models')) {
+            $option->models()->attach(collect($request->input('models'))->pluck('id'));
+        }
         return redirect()->route('options.index');
     }
 
@@ -104,14 +133,26 @@ class OtherOptionController extends Controller
                 'max:191',
                 Rule::unique('options', 'name')->ignore($option->id), 
             ],
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[^\s]+$/',
+                Rule::unique('options', 'code')->ignore($option->id), 
+            ],
             'option_group' => 'required|array',
             'option_group.id' => 'required|integer|exists:option_groups,id',
+            'models' => 'array',
+            'models.*.id' => 'integer|exists:models,id',
         ]);
         $option->update([
+            'code' => $request->code,
             'name' => $request->name,
             'option_group_id' => $request->input('option_group.id'),
         ]);
-
+        if ($request->has('models')) {
+            $option->models()->sync(collect($request->input('models'))->pluck('id'));
+        }
         return redirect()->route('options.index')
             ->with('success', 'option updated successfully.');
     }
@@ -120,16 +161,21 @@ class OtherOptionController extends Controller
     {
         $ids = $request->input('ids');
         $options = Option::whereIn('id', $ids)->get();
-        Option::whereIn('id', $ids)->delete();
+        foreach($options as $option) {
+            $option->options()->detach();
+            $option->delete();
+        }
         return redirect()->route('options.index');
-        
     }
-    public function getoptions(Request $request)
+    public function getOptions(Request $request)
     {
         if ($request->ajax()) {
-            $data = Option::with(['optionGroup'])->orderBy('id', 'desc')->get();
+            $data = Option::with(['optionGroup', 'models'])->orderBy('id', 'desc')->get();
             return DataTables::of($data)
                 ->addIndexColumn()
+                ->addColumn('models_name', function ($row) {
+                    return $row->models->pluck('name')->implode(', ');
+                })
                 ->make(true);
         }
     }
@@ -182,7 +228,7 @@ class OtherOptionController extends Controller
         return redirect()->route('optionGroups.index');
         
     }
-    public function getoptionGroups(Request $request)
+    public function getOptionGroups(Request $request)
     {
         if ($request->ajax()) {
             $data = OptionGroup::orderBy('id', 'desc')->get();
@@ -190,5 +236,13 @@ class OtherOptionController extends Controller
                 ->addIndexColumn()
                 ->make(true);
         }
+    }
+
+    public function getGroupOptions()
+    {
+        $group_options = Option::getGroupedOptions();
+        return response()->json([
+            'group_options' => $group_options
+        ]);
     }
 }

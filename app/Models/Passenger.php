@@ -9,7 +9,7 @@ class Passenger extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['no'];
+    protected $fillable = ['code', 'no'];
     public $timestamps = false;
 
 
@@ -17,7 +17,11 @@ class Passenger extends Model
 
     public function getNameAttribute(): string
     {
-        return $this->no;
+        return (int)$this->no;
+    }
+    public function cars()
+    {
+        return $this->hasMany(Car::class);
     }
    
 }

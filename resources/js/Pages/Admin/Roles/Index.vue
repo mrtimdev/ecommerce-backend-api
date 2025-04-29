@@ -1,7 +1,7 @@
 <template>
   <DefaultLayout>
     <Head :title="$t('role.list')" />
-    <div class="container" v-if="route().current('roles.index')">
+    <div class="container">
       <div
         class="content-header rounded-tl-md rounded-tr-md p-5 brole-b bg-white dark:brole-gray-700 dark:bg-boxdark-1 flex flex-grow items-center justify-between"
       >
@@ -41,6 +41,7 @@
                 <th class="w-[20%]">{{ $t("name") }}</th>
                 <th class="w-[20%]">{{ $t("display_name") }}</th>
                 <th class="w-[30%]">{{ $t("description") }}</th>
+                <th class="w-[30%]">{{ $t("permissions") }}</th>
                 <th class="w-[10%] action-col">{{ $t("actions") }}</th>
               </tr>
             </thead>
@@ -81,129 +82,132 @@ const breadcrumbs = reactive([
   { label: t("list"), url: null, is_active: true },
 ]);
 onMounted(() => {
-  if (route().current("roles.index")) {
-    tableData.value = $("#roles").DataTable({
-      processing: true,
-      serverSide: true,
-      pageLength: 10,
-      sort: [[0, "desc"]],
-      aLengthMenu: [
-        [5, 10, 25, 50, -1],
-        [5, 10, 25, 50, 100, "All"],
-      ],
-      ajax: {
-        url: route("roles.list"),
-        type: "GET",
-      },
-      columns: [
-        {
-          data: "id",
-          orderable: false,
-          searchable: false,
-          className: "checkbox-col",
-          render: function (data, type, row, meta) {
-            const checkBoxHtml = `<div id="checkbox-${row.id}"></div>`;
-            setTimeout(() => {
-              const container = document.getElementById(`checkbox-${row.id}`);
-              if (container.__vueApp__) {
-                container.__vueApp__.unmount();
-              }
-              const checkBoxApp = createApp({
-                render() {
-                  return h(CheckBox, {
-                    class: "check-row",
-                    value: parseInt(row.id),
-                    checked: false,
-                    "onUpdate:checked": (checked) =>
-                      mainStore.onCheckRow(checked, parseInt(row.id)),
-                  });
-                },
-              });
+  tableData.value = $("#roles").DataTable({
+    processing: true,
+    serverSide: true,
+    pageLength: 10,
+    sort: [[0, "desc"]],
+    aLengthMenu: [
+      [5, 10, 25, 50, -1],
+      [5, 10, 25, 50, 100, "All"],
+    ],
+    ajax: {
+      url: route("roles.list"),
+      type: "GET",
+    },
+    columns: [
+      {
+        data: "id",
+        orderable: false,
+        searchable: false,
+        className: "checkbox-col",
+        render: function (data, type, row, meta) {
+          const checkBoxHtml = `<div id="checkbox-${row.id}"></div>`;
+          setTimeout(() => {
+            const container = document.getElementById(`checkbox-${row.id}`);
+            if (container.__vueApp__) {
+              container.__vueApp__.unmount();
+            }
+            const checkBoxApp = createApp({
+              render() {
+                return h(CheckBox, {
+                  class: "check-row",
+                  value: parseInt(row.id),
+                  checked: false,
+                  "onUpdate:checked": (checked) =>
+                    mainStore.onCheckRow(checked, parseInt(row.id)),
+                });
+              },
+            });
 
-              container.__vueApp__ = checkBoxApp;
-              checkBoxApp.use(i18n).mount(container);
-            }, 0);
-            return checkBoxHtml;
-          },
+            container.__vueApp__ = checkBoxApp;
+            checkBoxApp.use(i18n).mount(container);
+          }, 0);
+          return checkBoxHtml;
         },
-        { data: "name", name: "name" },
-        { data: "display_name", name: "display_name" },
-        { data: "description", name: "description" },
-        {
-          data: "action",
-          roleable: false,
-          searchable: false,
-          className: "action-col",
-          render: function (data, type, row, meta) {
-            const actionsHtml = `<div id="actions-${row.id}"></div>`;
-            setTimeout(() => {
-              const container = document.getElementById(`actions-${row.id}`);
-              if (container.__vueApp__) {
-                container.__vueApp__.unmount();
-              }
-              const actionsApp = createApp({
-                render() {
-                  return h(
-                    ActionButtons,
-                    {},
-                    {
-                      default: () => [
-                        h(
-                          "div",
-                          {
-                            class:
-                              "cursor-pointer brole-t brole-stroke dark:brole-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                            onClick: (e) => {
-                              e.preventDefault();
-                              router.get(route("roles.create", row.id));
-                            },
-                          },
-                          [
-                            h("i", { class: "fi fi-ts-attribution-pencil mr-2" }),
-                            t("edit"),
-                          ]
-                        ),
-                        h(
-                          "div",
-                          {
-                            class:
-                              "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                            onClick: (e) => {
-                              e.preventDefault();
-                              router.get(route("roles.permissions", row.id));
-                            },
-                          },
-                          [
-                            h("i", { class: "fi fi-ts-workflow-setting-alt mr-2" }),
-                            t("permissions"),
-                          ]
-                        ),
-                        h(
-                          "div",
-                          {
-                            class:
-                              "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                            onClick: (e) => {
-                              e.preventDefault();
-                              events.emit("confirm:open", [row.id]);
-                            },
-                          },
-                          [h("i", { class: "fi fi-tr-trash-xmark mr-2" }), t("delete")]
-                        ),
-                      ],
-                    }
-                  );
-                },
-              });
-              container.__vueApp__ = actionsApp;
-              actionsApp.use(i18n).mount(container);
-            }, 0);
-            return actionsHtml;
-          },
+      },
+      { data: "name", name: "name" },
+      { data: "display_name", name: "display_name" },
+      { data: "description", name: "description" },
+      {
+        data: "permissions",
+        name: "permissions",
+        render: (data) => {
+          const names = _.map(data, "name");
+          return names;
         },
-      ],
-    });
-  }
+      },
+      {
+        data: "action",
+        roleable: false,
+        searchable: false,
+        className: "action-col",
+        render: function (data, type, row, meta) {
+          const actionsHtml = `<div id="actions-${row.id}"></div>`;
+          setTimeout(() => {
+            const container = document.getElementById(`actions-${row.id}`);
+            if (container.__vueApp__) {
+              container.__vueApp__.unmount();
+            }
+            const actionsApp = createApp({
+              render() {
+                return h(
+                  ActionButtons,
+                  {},
+                  {
+                    default: () => [
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer brole-t brole-stroke dark:brole-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            router.get(route("roles.create", row.id));
+                          },
+                        },
+                        [h("i", { class: "fi fi-ts-attribution-pencil mr-2" }), t("edit")]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            router.get(route("roles.permissions", row.id));
+                          },
+                        },
+                        [
+                          h("i", { class: "fi fi-ts-workflow-setting-alt mr-2" }),
+                          t("permissions"),
+                        ]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("confirm:open", [row.id]);
+                          },
+                        },
+                        [h("i", { class: "fi fi-tr-trash-xmark mr-2" }), t("delete")]
+                      ),
+                    ],
+                  }
+                );
+              },
+            });
+            container.__vueApp__ = actionsApp;
+            actionsApp.use(i18n).mount(container);
+          }, 0);
+          return actionsHtml;
+        },
+      },
+    ],
+  });
 });
 
 const btnDeleteSelected = () => {

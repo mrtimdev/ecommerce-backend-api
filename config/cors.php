@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'paths' => ['ftd/api/*', 'sanctum/csrf-cookie'],
+    'paths' => ['ftd/api/v1/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 

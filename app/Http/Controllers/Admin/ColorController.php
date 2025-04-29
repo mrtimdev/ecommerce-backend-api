@@ -30,6 +30,12 @@ class ColorController extends Controller
                 'max:50',
                 'unique:colors,code',
             ],
+            'hex' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:colors,hex',
+            ],
             'name' => 'required|string|max:191|',
             'description' => 'nullable',
         ]);
@@ -59,6 +65,12 @@ class ColorController extends Controller
                 'string',
                 'max:50',
                 Rule::unique('colors', 'code')->ignore($color->id), 
+            ],
+            'hex' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('colors', 'hex')->ignore($color->id), 
             ],
             'name' => 'required|string|max:191|',
             'description' => 'nullable',

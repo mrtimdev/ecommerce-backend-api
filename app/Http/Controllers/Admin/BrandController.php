@@ -16,11 +16,23 @@ class BrandController extends Controller
 {
     public function index(Request $request)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars-brands')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Brands/Index');
     }
 
     public function create()
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('brands-add')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Brands/Create');
     }
 
@@ -64,6 +76,12 @@ class BrandController extends Controller
 
     public function edit(Brand $Brand)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('brands-edit')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Brands/Edit', ['brand' => $Brand]);
     }
 
@@ -111,16 +129,14 @@ class BrandController extends Controller
         return redirect()->route('brands.index');
     }
 
-    public function destroy(Request $request, Brand $brand)
-    {
-        if ($brand->image_path) {
-            Storage::disk('public')->delete($brand->image_path);
-        }
-        $brand->delete();
-        return redirect()->route('brands.index');
-    }
     public function deleteSelected(Request $request)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('brands-delete')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $ids = $request->input('ids');
         $brands = Brand::whereIn('id', $ids)->get();
 

@@ -78,7 +78,6 @@ const mainStore = useMainStore();
 const { t } = useI18n();
 const tableData = ref(false);
 
-
 const brandStore = useBrand();
 
 const breadcrumbs = reactive([
@@ -100,6 +99,13 @@ onMounted(() => {
     ajax: {
       url: route("brands.list"),
       type: "GET",
+    },
+    stateSave: true,
+    stateSaveCallback: function (settings, data) {
+      localStorage.setItem("DataTables_" + settings.sInstance, JSON.stringify(data));
+    },
+    stateLoadCallback: function (settings) {
+      return JSON.parse(localStorage.getItem("DataTables_" + settings.sInstance));
     },
     columns: [
       {
@@ -150,7 +156,7 @@ onMounted(() => {
         orderable: false,
         searchable: false,
         render: function (data, type, row, meta) {
-          const status = (data) ? "active" : "inactive";
+          const status = data ? "active" : "inactive";
           return statusFormat(status);
         },
       },
@@ -209,7 +215,6 @@ onMounted(() => {
       },
     ],
   });
-
 });
 
 events.on("modal:success", () => {
@@ -231,7 +236,6 @@ events.on("confirm:success", () => {
 });
 
 onBeforeUnmount(() => mainStore.clearSelectedRows());
-
 </script>
 
 <style lang="scss">

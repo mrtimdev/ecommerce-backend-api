@@ -24,6 +24,7 @@ class ConditionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'code' => 'required|string|max:100|unique:conditions,code|regex:/^[^\s]+$/|max:100', 
             'name' => 'required|string|max:191|unique:conditions,name',
             'is_active' => ['required', 'boolean'],
         ]);
@@ -32,12 +33,12 @@ class ConditionController extends Controller
         if($request->is_save_and_more) {
             return redirect()->route('conditions.create');
         }
-        return redirect()->route('conditions.index')->with('success', 'Car Category created successfully.');
+        return redirect()->route('conditions.index')->with('success', 'Car Condition created successfully.');
     }
 
     public function show(Condition $Condition)
     {
-        return Inertia::render('Admin/Conditions/Show', ['category' => $Condition]);
+        return Inertia::render('Admin/Conditions/Show', ['condition' => $Condition]);
     }
 
     public function edit(Condition $Condition)
@@ -48,6 +49,13 @@ class ConditionController extends Controller
     public function update(Request $request, Condition $condition)
     {
         $validated = $request->validate([
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[^\s]+$/',
+                Rule::unique('conditions', 'code')->ignore($condition->id), 
+            ],
             'name' => [
                 'required',
                 'string',

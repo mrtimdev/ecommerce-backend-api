@@ -77,6 +77,13 @@ onMounted(() => {
       url: route("orders.list"),
       type: "GET",
     },
+    stateSave: true,
+    stateSaveCallback: function (settings, data) {
+      localStorage.setItem("DataTables_" + settings.sInstance, JSON.stringify(data));
+    },
+    stateLoadCallback: function (settings) {
+      return JSON.parse(localStorage.getItem("DataTables_" + settings.sInstance));
+    },
     columns: [
       {
         data: "created_at",
@@ -87,9 +94,9 @@ onMounted(() => {
       { data: "order_no", className: "!text-center", name: "order_no" },
       { data: "item_code", className: "!text-center", name: "item_code" },
       { data: "price", name: "price", render: (data) => formatMoney(data) },
-      { data: "full_name", name: "full_name" },
-      { data: "email", name: "email" },
-      { data: "phone", name: "phone", className: "!text-center" },
+      { data: "user.name", name: "user.name" },
+      { data: "user.email", name: "user.email" },
+      { data: "user.phone", name: "user.phone", className: "!text-center" },
       { data: "status", name: "status", render: (data) => statusFormat(data) },
       {
         data: "action",

@@ -15,15 +15,22 @@ class HomePageSlider extends Model
         'title',
         'description',
         'image_path',
+        'image_path_2',
+        'link',
         'is_active'
     ];
 
-    protected $appends = ['status', 'image_full_path'];
+    protected $appends = ['status', 'image_full_path', 'image_full_path_2'];
 
     
     public function getImageFullPathAttribute()
     {
         $image_path = $this->attributes['image_path'];
+        return $image_path ? asset('storage/' . $image_path) : asset('assets/images/no-image.jpg');
+    }
+    public function getImageFullPath2Attribute()
+    {
+        $image_path = $this->attributes['image_path_2'];
         return $image_path ? asset('storage/' . $image_path) : asset('assets/images/no-image.jpg');
     }
     public function getIsActiveAttribute(): bool

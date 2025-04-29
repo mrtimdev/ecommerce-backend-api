@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
@@ -27,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'identify' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -40,13 +41,25 @@ class LoginRequest extends FormRequest
     public function authenticate(): void
     {
         $this->ensureIsNotRateLimited();
+        $identify = $this->input('identify');
+        $password = $this->input('password');
+        $fieldType = filter_var($identify, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $user = User::where($fieldType, $identify)->where("type", "=", "backend")->first();
+        
+        if (!$user) {
             RateLimiter::hit($this->throttleKey());
+            $errorMessage = $fieldType === 'email' ? 'We couldn’t find an account with that email. Please check and try again.' : 'We couldn’t find an account with that username. Please check and try again.';
+            throw ValidationException::withMessages(['identify' => $errorMessage]);
+        }
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+        if (!$user->is_active) {
+            throw ValidationException::withMessages(['identify' => 'Your account is not active. Please contact support for assistance.']);
+        }
+        // Check password
+        if (!Auth::attempt([$fieldType => $identify, 'password' => $password], $this->boolean('remember'))) {
+            RateLimiter::hit($this->throttleKey());
+            throw ValidationException::withMessages(['password' => 'The password you entered is incorrect. Please try again.']);
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -68,7 +81,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'identify' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),

@@ -3,7 +3,10 @@
 namespace App\Http\Resources\Frontend;
 
 use Carbon\Carbon;
+use App\Models\ContactUs;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CarDetailResource extends JsonResource
@@ -11,6 +14,16 @@ class CarDetailResource extends JsonResource
     public $preserveKeys = false;
     public function toArray(Request $request): array
     {
+        $is_liked = false;
+        $token = $request->bearerToken();
+        $tokenModel = PersonalAccessToken::findToken($token);
+        if ($tokenModel) {
+            $user = $tokenModel->tokenable;
+            if($user && $user->id) {
+                $is_liked = $this->likes()->where('user_id', $user->id)->exists();
+            }
+        }
+        $agency_contact = DB::table('agency_contact')->where('type', '=', 'khmer')->firstOrFail();
         return [
             'id' => $this->id,
             'listing_date' => $this->listing_date ? Carbon::createFromFormat('Y-m-d', $this->listing_date) : null,
@@ -45,6 +58,7 @@ class CarDetailResource extends JsonResource
             'fuel_type' => $this->fuelType->name,
             'transmission_type' => $this->transmissionType->name,
             'color' => [
+                'hex' => $this->color->hex,
                 'code' => $this->color->code,
                 'name' => $this->color->name,
             ],
@@ -53,6 +67,7 @@ class CarDetailResource extends JsonResource
             'size' => $this->size ?? "",
             'location' => [
                 'code' => $this->location->code,
+                'flag_code' => $this->location->flag_code,
                 'dial_code' => $this->location->dial_code,
                 'name' => $this->location->name,
                 'flag_url' => $this->location->flag_url,
@@ -73,20 +88,24 @@ class CarDetailResource extends JsonResource
             'featured_information' => $this->featureInformation(),
             'status' => $this->status,
 
-            'user' => [
-                'id' => $this->user->id,
-                'first_name' => $this->user->first_name,
-                'last_name' => $this->user->last_name,
-                'email' => $this->user->email,
-                'phone' => $this->user?->phone ?? "",
+            'agency_contact' => [
+                'title' => $agency_contact->title,
+                'name' => $agency_contact->name,
+                'phone' => $agency_contact->phone,
+                'telegram_link' => $agency_contact->telegram_link,
+                'facebook_link' => $agency_contact->facebook_link,
+                'whatapp_link' => $agency_contact->whatapp_link,
+                'avatar' => $agency_contact->avatar ? asset('storage/' . $agency_contact->avatar) : asset('assets/images/user/no-avatar.png')
             ],
             
+            'detail_link' => "https://reachautoimport.com/Cambodia/detail?c_slug=$this->slug&id=$this->id",
         
-            // Timestamps
+            'view_count' => $this->view_count,
+            'like_count' => $this->like_count,
             'created_at' => $this->created_at->toIso8601String(),
             'updated_at' => $this->updated_at->toIso8601String(),
 
-            
+            'is_liked' => $is_liked,
         ];
         
     }

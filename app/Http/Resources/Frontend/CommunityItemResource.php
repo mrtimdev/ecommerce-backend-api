@@ -16,7 +16,7 @@ class CommunityItemResource extends JsonResource
     {
         return [
             'title' => $this->title,
-            'link' => $this->link,
+            'pdf_path' => $this->pdf_full_path,
             'description' => $this->description,
             'image_path' => $this->image_full_path,
         ];

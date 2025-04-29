@@ -11,21 +11,25 @@ use App\Models\Story;
 use App\Models\Video;
 use App\Models\Country;
 use App\Models\Service;
+use App\Models\TaxInfo;
 use App\Models\Category;
 use App\Models\FuelType;
 use App\Models\Location;
-use App\Models\DriveType;
-use App\Models\Passenger;
 use App\Models\Steering;
 use App\Models\Community;
 use App\Models\ContactUs;
+use App\Models\DriveType;
 use App\Models\Guarantee;
+use App\Models\Passenger;
 use App\Models\ServiceItem;
+use App\Models\TaxInfoItem;
 use Illuminate\Http\Request;
 use App\Models\CommunityItem;
 use App\Models\GuaranteeItem;
 use App\Models\HomePageSlider;
+use App\Models\MenuCarGallery;
 use Illuminate\Validation\Rule;
+use App\Models\MenuCarGalleryItem;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -44,17 +48,24 @@ class FrontendController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image_path' => 'required|image',
-            'is_active' => 'required|boolean'
+            'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image_path_2' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'is_active' => 'required|boolean',
+            'link' => 'nullable|string|url',
+        ], [
+            'image_path_2.required' => 'The image path field is required.'
         ]);
 
         // Handle file upload
         $imagePath = $request->file('image_path')->store('homepagesliders', 'public');
+        $imagePath2 = $request->file('image_path_2')->store('homepagesliders', 'public');
 
         HomePageSlider::create([
             'title' => $request->title,
             'description' => $request->description,
             'image_path' => $imagePath,
+            'image_path_2' => $imagePath2,
+            'link' => $request->link,
             'is_active' => $request->is_active,
         ]);
 
@@ -66,8 +77,10 @@ class FrontendController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'image_path' => 'nullable|image', 
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image_path_2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'required|boolean',
+            'link' => 'nullable|string|url',
         ]);
 
         if ($request->hasFile('image_path')) {
@@ -78,11 +91,21 @@ class FrontendController extends Controller
         } else {
             $imagePath = $slider->image_path;
         }
+        if ($request->hasFile('image_path_2')) {
+            if ($slider->image_path_2) {
+                Storage::disk('public')->delete($slider->image_path_2);
+            }
+            $imagePath2 = $request->file('image_path_2')->store('homepagesliders', 'public');
+        } else {
+            $imagePath2 = $slider->image_path_2;
+        }
 
         $slider->update([
             'title' => $request->title,
             'description' => $request->description,
             'image_path' => $imagePath,
+            'image_path_2' => $imagePath2,
+            'link' => $request->link,
             'is_active' => $request->is_active,
         ]);
 
@@ -94,15 +117,16 @@ class FrontendController extends Controller
     {
         $ids = $request->input('ids');
         $sliders = HomePageSlider::whereIn('id', $ids)->get();
-        // return response()->json(['sliders' => $sliders], 404);
         foreach ($sliders as $slider) {
             if ($slider->image_path) {
                 Storage::disk('public')->delete($slider->image_path);
             }
+            if ($slider->image_path_2) {
+                Storage::disk('public')->delete($slider->image_path_2);
+            }
+            $slider->delete();
         }
-        HomePageSlider::whereIn('id', $ids)->delete();
         return redirect()->route('frontend.page.sliders.index');
-        
     }
 
     public function getSliders(Request $request)
@@ -132,6 +156,7 @@ class FrontendController extends Controller
             'facebook_page'     => 'nullable|url',
             'youtube'           => 'nullable|url',
             'tiktok'            => 'nullable|url',
+            'contact_label'     => 'nullable|string',
             'address'            => 'nullable|string',
             'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -148,9 +173,61 @@ class FrontendController extends Controller
             'facebook_page'     => $request->facebook_page,
             'youtube'           => $request->youtube,
             'tiktok'            => $request->tiktok,
+            'contact_label'     => $request->contact_label,
             'address'            => $request->address,
         ]);
         return redirect()->route('frontend.page.contactus.index');
+    }
+
+    public function agencyContactKhIndex()
+    {
+        $contactusnow = DB::table('agency_contact')->where('type', '=', 'khmer')->firstOrFail();
+        return Inertia::render('Admin/Frontend/Pages/AgencyContact/Khmer', [
+            'contactusnow' => fn () => $contactusnow,
+        ]);
+    }
+
+    public function agencyContactKrIndex()
+    {
+        $contactusnow = DB::table('agency_contact')->where('type', '=', 'korea')->firstOrFail();
+        return Inertia::render('Admin/Frontend/Pages/AgencyContact/Korea', [
+            'contactusnow' => fn () => $contactusnow,
+        ]);
+    }
+
+    public function storeAgencyContact(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|max:255',
+            'phone' => 'required|max:20',
+            'name' => 'required|max:255',
+            'telegram_link' => 'nullable|url',
+            'facebook_link' => 'nullable|url',
+            'whatapp_link' => 'nullable|url',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+        $contactusnow = DB::table('agency_contact')->where('type', '=', $request->type)->first();
+        $avatar = $contactusnow->avatar ?? "";
+        if ($request->hasFile('avatar')) {
+            if (Storage::disk('public')->exists($avatar)) {
+                Storage::disk('public')->delete($avatar);
+            }            
+            $avatar = $request->file('avatar')->store('contactusnow', 'public');
+        }
+        
+        DB::table('agency_contact')->where('type', '=' , $request->type)->update([
+            'title' => $request->title,
+            'phone' => $request->phone,
+            'name' => $request->name,
+            'telegram_link' => $request->telegram_link,
+            'facebook_link' => $request->facebook_link,
+            'whatapp_link' => $request->whatapp_link,
+            'avatar' => $avatar,
+        ]);
+        if($request->type === "khmer") {
+            return redirect()->route('frontend.page.agencycontact-kh.index');
+        }
+        return redirect()->route('frontend.page.agencycontact-kr.index');
     }
 
     # videos stocks
@@ -257,7 +334,7 @@ class FrontendController extends Controller
             'description' => 'nullable|string',
             'country_id' => 'nullable',
             'youtube_link' => 'nullable|string|url',
-            'image_path' => 'required|image',
+            'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'required|boolean'
         ]);
 
@@ -285,7 +362,7 @@ class FrontendController extends Controller
             'title' => 'required|string|max:191',
             'country_id' => 'nullable',
             'youtube_link' => 'nullable|string|url',
-            'image_path' => 'required|image',
+            'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'required|boolean',
             'description' => 'nullable|string',
         ]);
@@ -459,7 +536,7 @@ class FrontendController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:191',
-            'image_path' => 'nullable|image',
+            'image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ]);
 
         $guarantee = Guarantee::first();
@@ -486,15 +563,31 @@ class FrontendController extends Controller
         $request->validate([
             'title' => 'required|string|max:191|unique:guarantee_items,title',
             'description' => 'nullable|string',
+            'image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ]);
+        $image_path = null;
+        if ($request->hasFile('image_path')) {
+            $image_path = $request->file('image_path')->store('guarantees', 'public');
+        }
 
-        GuaranteeItem::create(
+        $guaranteeItem = GuaranteeItem::create(
             [
                 'title' => $request->title,
                 'description' => $request->description,
                 'guarantee_id' => $request->guarantee_id,
+                'image_path' => $image_path
             ]
         );
+        
+        if ($request->has('items')) {
+            foreach ($request->items as $item) {
+                if($item['name'] !== "") {
+                    $guaranteeItem->items()->create([
+                        'name' => $item['name'],
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('frontend.page.guarantees.index');
     }
@@ -508,7 +601,16 @@ class FrontendController extends Controller
                 Rule::unique('guarantee_items', 'title')->ignore($guaranteeItem->id), 
             ],
             'description' => 'nullable|string',
+            'image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
         ]);
+
+        if ($request->hasFile('image_path')) {
+            if($guaranteeItem?->image_path) {
+                Storage::disk('public')->delete($guaranteeItem->image_path);  
+            }
+            
+            $guaranteeItem->image_path = $request->file('image_path')->store('guarantees', 'public');
+        }
 
         $guaranteeItem->update(
             [
@@ -516,6 +618,17 @@ class FrontendController extends Controller
                 'description' => $request->description,
             ]
         );
+        
+        if ($request->has('items')) {
+            $guaranteeItem->items()->delete();
+            foreach ($request->items as $item) {
+                if($item['name']) {
+                    $guaranteeItem->items()->create([
+                        'name' => $item['name'],
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('frontend.page.guarantees.index');
     }
@@ -523,19 +636,30 @@ class FrontendController extends Controller
     public function getListGuaranteeItems(Request $request)
     {
         if ($request->ajax()) {
-            return DataTables::of(GuaranteeItem::select([
+            return DataTables::of(GuaranteeItem::with(['items'])->select([
                 'id',
                 'title',
                 'description',
+                'image_path',
             ]))
             ->addIndexColumn()
+            ->addColumn('items_list', function ($row) {
+                return $row->items->pluck('name')->implode(', ');
+            })
             ->make(true);
         }
     }
     public function deleteSelectedGuaranteeItems(Request $request)
     {
         $ids = $request->input('ids');
-        GuaranteeItem::whereIn('id', $ids)->delete();
+        $guaranteeItems = GuaranteeItem::whereIn('id', $ids)->get();
+        foreach ($guaranteeItems as $guaranteeItem) {
+            if ($guaranteeItem->image_path) {
+                Storage::disk('public')->delete($guaranteeItem->image_path);
+            }
+            $guaranteeItem->items()->delete();
+            $guaranteeItem->delete();
+        }
         return redirect()->route('frontend.page.guarantees.index');
         
     }
@@ -573,17 +697,22 @@ class FrontendController extends Controller
             'title' => 'required|string|max:191|unique:community_items,title',
             'description' => 'nullable|string',
             'image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
-            'link' => 'nullable|url',
+            'pdf' => 'required|file|mimes:pdf|max:51200',
         ]);
         $image_path = null;
+        $pdf_path = null;
         if ($request->hasFile('image_path')) {
             $image_path = $request->file('image_path')->store('communities', 'public');
+        }
+        
+        if ($request->hasFile('pdf')) {
+            $pdf_path = $request->file('pdf')->store('communities', 'public');
         }
 
         CommunityItem::create(
             [
                 'title' => $request->title,
-                'link' => $request->link,
+                'pdf_path' => $pdf_path,
                 'description' => $request->description,
                 'image_path' => $image_path,
                 'community_id' => $request->community_id,
@@ -603,7 +732,7 @@ class FrontendController extends Controller
             ],
             'image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             'description' => 'nullable|string',
-            'link' => 'nullable|url',
+            'pdf' => 'required|file|mimes:pdf|max:51200',
         ]);
 
         if ($request->hasFile('image_path')) {
@@ -612,11 +741,16 @@ class FrontendController extends Controller
             }
             $communityItem->image_path = $request->file('image_path')->store('communities', 'public');
         }
+        if ($request->hasFile('pdf')) {
+            if ($communityItem->pdf_path) {
+                Storage::disk('public')->delete($communityItem->pdf_path);
+            }
+            $communityItem->pdf_path = $request->file('pdf')->store('communities', 'public');
+        }
 
         $communityItem->update(
             [
                 'title' => $request->title,
-                'link' => $request->link,
                 'description' => $request->description,
                 'community_id' => $request->community_id,
             ]
@@ -645,11 +779,33 @@ class FrontendController extends Controller
             if ($communityItem->image_path) {
                 Storage::disk('public')->delete($communityItem->image_path);
             }
+            if ($communityItem->pdf_path) {
+                Storage::disk('public')->delete($communityItem->pdf_path);
+            }
+            $communityItem->delete();
         }
-        CommunityItem::whereIn('id', $ids)->delete();
         return redirect()->route('frontend.page.communities.index');
         
     }
+
+    public function communityItemPdfPreview(CommunityItem $communityItem)
+    {
+
+        return Inertia::render('Admin/Frontend/Pages/Communities/PdfPreview', [
+            'item' => $communityItem,
+        ]);
+    }
+    public function communityItemDownloadPdf(CommunityItem $communityItem)
+    {
+
+        if (!Storage::disk('public')->exists($communityItem->pdf_path)) {
+            abort(404, 'File not found');
+        }
+    
+        // Return the file for download
+        return Storage::disk('public')->download($communityItem->pdf_path);
+    }
+    
 
 
     #Menu
@@ -673,8 +829,8 @@ class FrontendController extends Controller
             'name' => 'required|string|max:100|unique:menus,name',
             'brands' => 'nullable|array',
             'brands.*.id' => 'nullable|integer|exists:brands,id',
-            'categories' => 'nullable|array',
-            'categories.*.id' => 'nullable|integer|exists:categories,id',
+            'category' => 'required|array',
+            'category.*.id' => 'nullable|integer|exists:categories,id',
             'models' => 'nullable|array',
             'models.*.id' => 'nullable|integer|exists:models,id',
             'fuel_types' => 'nullable|array',
@@ -687,10 +843,16 @@ class FrontendController extends Controller
             'drive_types.*.id' => 'nullable|integer|exists:drive_types,id',
             'passengers' => 'nullable|array',
             'passengers.*.id' => 'nullable|integer|exists:passengers,id',
+            'image_path' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
+        $imagePath = $request->file('image_path')->store('menus', 'public');
 
-        // Create the menu
-        $menu = Menu::create($request->only('code', 'name'));
+        $menu = Menu::create([
+            'code' => $request->code,
+            'name' => $request->name,
+            'image_path' => $imagePath,
+            'category_id' => $request->input('category.id'),
+        ]);
 
         // Attach related models
         if ($request->has('brands')) {
@@ -698,9 +860,6 @@ class FrontendController extends Controller
         }
         if ($request->has('models')) {
             $menu->models()->attach(collect($request->input('models'))->pluck('id'));
-        }
-        if ($request->has('categories')) {
-            $menu->categories()->attach(collect($request->input('categories'))->pluck('id'));
         }
         if ($request->has('fuel_types')) {
             $menu->fuel_types()->attach(collect($request->input('fuel_types'))->pluck('id'));
@@ -729,8 +888,8 @@ class FrontendController extends Controller
             'name' => 'required|string|max:100|unique:menus,name,' . $menu->id,
             'brands' => 'nullable|array',
             'brands.*.id' => 'nullable|integer|exists:brands,id',
-            'categories' => 'nullable|array',
-            'categories.*.id' => 'nullable|integer|exists:categories,id',
+            'category' => 'required|array',
+            'category.*.id' => 'nullable|integer|exists:categories,id',
             'models' => 'nullable|array',
             'models.*.id' => 'nullable|integer|exists:models,id',
             'fuel_types' => 'nullable|array',
@@ -743,14 +902,28 @@ class FrontendController extends Controller
             'drive_types.*.id' => 'nullable|integer|exists:drive_types,id',
             'passengers' => 'nullable|array',
             'passengers.*.id' => 'nullable|integer|exists:passengers,id',
+            'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $menu->update($request->only('code', 'name'));
+        if ($request->hasFile('image_path')) {
+            if ($menu->image_path) {
+                Storage::disk('public')->delete($menu->image_path);
+            }
+            $imagePath = $request->file('image_path')->store('menus', 'public');
+        } else {
+            $imagePath = $menu->image_path;
+        }
+
+        $menu->update([
+            'code' => $request->code,
+            'name' => $request->name,
+            'image_path' => $imagePath,
+            'category_id' => $request->input('category.id'),
+        ]);
 
         // Sync related models (replace old relationships with the new ones)
         $menu->brands()->sync(collect($request->input('brands'))->pluck('id'));
         $menu->models()->sync(collect($request->input('models'))->pluck('id'));
-        $menu->categories()->sync(collect($request->input('categories'))->pluck('id'));
         $menu->fuel_types()->sync(collect($request->input('fuel_types'))->pluck('id'));
         $menu->steerings()->sync(collect($request->input('steerings'))->pluck('id'));
         $menu->locations()->sync(collect($request->input('locations'))->pluck('id'));
@@ -758,8 +931,7 @@ class FrontendController extends Controller
         $menu->passengers()->sync(collect($request->input('passengers'))->pluck('id'));
 
         // Redirect back to the menu list or desired route
-        return redirect()->route('frontend.page.menus.index')
-            ->with('success', 'Menu updated successfully.');
+        return redirect()->route('frontend.page.menus.index');
     }
 
     public function deleteSelectedMenus(Request $request)
@@ -768,18 +940,22 @@ class FrontendController extends Controller
         if (empty($ids) || !is_array($ids)) {
             return redirect()->route('frontend.page.menus.index')->with('error', 'No valid menu IDs provided');
         }
+
         $menus = Menu::whereIn('id', $ids)->get();
         foreach ($menus as $menu) {
             $menu->brands()->detach();
             $menu->models()->detach();
-            $menu->categories()->detach();
             $menu->fuel_types()->detach();
             $menu->steerings()->detach();
             $menu->locations()->detach();
             $menu->drive_types()->detach();
             $menu->passengers()->detach();
+
+            if ($menu->image_path) {
+                Storage::disk('public')->delete($menu->image_path);
+            }
+            $menu->delete();
         }
-        Menu::whereIn('id', $ids)->delete();
         return redirect()->route('frontend.page.menus.index');
     }
 
@@ -787,7 +963,7 @@ class FrontendController extends Controller
     {
         if ($request->ajax()) {
             // Eager load the related models to avoid N+1 query issues
-            $data = Menu::with(['brands', 'models', 'categories', 'fuel_types', 'steerings', 'drive_types', 'passengers', 'locations'])
+            $data = Menu::with(['brands', 'models', 'category', 'fuel_types', 'steerings', 'drive_types', 'passengers', 'locations'])
                         ->orderBy('id', 'desc')
                         ->get();
 
@@ -800,8 +976,8 @@ class FrontendController extends Controller
                 ->addColumn('models_name', function ($row) {
                     return $row->models->pluck('name')->implode(', ');
                 })
-                ->addColumn('categories_name', function ($row) {
-                    return $row->categories->pluck('name')->implode(', ');
+                ->addColumn('category_name', function ($row) {
+                    return $row->category->name;
                 })
                 ->addColumn('fuel_types_name', function ($row) {
                     return $row->fuel_types->pluck('name')->implode(', ');
@@ -821,6 +997,302 @@ class FrontendController extends Controller
                 ->rawColumns(['brands', 'models', 'categories', 'fuel_types', 'steerings', 'locations'])
                 ->make(true);
         }
+    }
+
+
+    # taxinfos
+
+    public function taxInfoIndex()
+    {
+        $taxInfo = TaxInfo::first();
+        $items = TaxInfoItem::all();
+
+        return Inertia::render('Admin/Frontend/Pages/TaxInfos/Index', [
+            'taxInfo' => $taxInfo,
+            'is_limited' => $items->count() >= 5 ? true : false
+        ]);
+    }
+    public function taxInfoStore(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:191',
+            'label' => 'required|string',
+        ]);
+        $taxinfo = Taxinfo::first();
+        $taxinfo->update($validated);
+
+        return redirect()->route('frontend.page.taxInfos.index');
+    }
+
+
+    public function taxInfoItemStore(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:191|unique:tax_info_items,title',
+            'pdf' => 'required|file|mimes:pdf|max:51200',
+        ]);
+        $items = TaxInfoItem::all();
+        if($items->count() >= 5) {
+            return redirect()->route('frontend.page.taxInfos.index');
+        }
+        $image_path = null;
+        $pdf_path = null;
+        if ($request->hasFile('image_path')) {
+            $image_path = $request->file('image_path')->store('taxInfos', 'public');
+        }
+        
+        if ($request->hasFile('pdf')) {
+            $pdf_path = $request->file('pdf')->store('taxInfos', 'public');
+        }
+
+        TaxInfoItem::create(
+            [
+                'title' => $request->title,
+                'pdf_path' => $pdf_path,
+                'tax_info_id' => $request->tax_info_id,
+            ]
+        );
+
+        return redirect()->route('frontend.page.taxInfos.index');
+    }
+    public function taxInfoItemUpdate(Request $request, TaxInfoItem $taxInfoItem)
+    {
+        $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:191',
+                Rule::unique('tax_info_items', 'title')->ignore($taxInfoItem->id), 
+            ],
+            'pdf' => 'nullable|file|mimes:pdf|max:51200',
+        ]);
+
+        if ($request->hasFile('image_path')) {
+            if($taxInfoItem?->image_path) {
+                Storage::disk('public')->delete($taxInfoItem->image_path);  
+            }
+            $taxInfoItem->image_path = $request->file('image_path')->store('taxInfos', 'public');
+        }
+        if ($request->hasFile('pdf')) {
+            if ($taxInfoItem->pdf_path) {
+                Storage::disk('public')->delete($taxInfoItem->pdf_path);
+            }
+            $taxInfoItem->pdf_path = $request->file('pdf')->store('taxinfos', 'public');
+        }
+
+        $taxInfoItem->update(
+            [
+                'title' => $request->title,
+                'tax_info_id' => $request->tax_info_id,
+            ]
+        );
+
+        return redirect()->route('frontend.page.taxInfos.index');
+    }
+
+    public function taxInfoItemChangeStatus(Request $request, TaxInfoItem $taxInfoItem)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:tax_info_items,id',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $taxInfoItem->update(
+            [
+                'is_active' => $request->is_active,
+            ]
+        );
+
+        return redirect()->route('frontend.page.taxInfos.index');
+    }
+
+    public function getListTaxInfoItems(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = TaxInfoItem::orderBy('id', 'desc')->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->make(true);
+        }
+    }
+    public function deleteSelectedTaxInfoItems(Request $request)
+    {
+        $ids = $request->input('ids');
+        $taxInfoItem = TaxinfoItem::whereIn('id', $ids)->get();
+        if ($taxInfoItem->isEmpty()) {
+            return redirect()->route('frontend.page.taxInfos.index', ['message' => 'No tax infos found with the provided IDs']);
+        }
+        foreach ($taxInfoItem as $taxInfoItem) {
+            if ($taxInfoItem->pdf_path) {
+                Storage::disk('public')->delete($taxInfoItem->pdf_path);
+            }
+            $taxInfoItem->delete();
+        }
+        return redirect()->route('frontend.page.taxInfos.index');
+    }
+
+    public function taxInfoItemPdfPreview(TaxInfoItem $taxInfoItem)
+    {
+
+        return Inertia::render('Admin/Frontend/Pages/TaxInfos/PdfPreview', [
+            'item' => $taxInfoItem,
+        ]);
+    }
+    public function taxInfoItemDownloadPdf(TaxInfoItem $taxInfoItem)
+    {
+
+        if (!Storage::disk('public')->exists($taxInfoItem->pdf_path)) {
+            abort(404, 'File not found');
+        }
+    
+        // Return the file for download
+        return Storage::disk('public')->download($taxInfoItem->pdf_path);
+    }
+
+
+
+
+    # Menu Car Gallery
+
+    public function menuCarGalleryIndex()
+    {
+        $menuCarGallery = MenuCarGallery::first();
+        return Inertia::render('Admin/Frontend/Pages/MenuCarGalleries/Index', [
+            'menuCarGallery' => $menuCarGallery,
+        ]);
+    }
+    public function menuCarGalleryStore(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:191',
+            'label' => 'required|string',
+        ]);
+
+        $menuCarGallery = MenuCarGallery::first();
+        $menuCarGallery->update($validated);
+
+        return redirect()->route('frontend.page.menuCarGallery.index');
+    }
+
+
+    public function menuCarGalleryItemStore(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:191|unique:menu_car_gallery_items,title',
+            'pdf' => 'required|file|mimes:pdf|max:51200',
+        ]);
+        $image_path = null;
+        $pdf_path = null;
+        if ($request->hasFile('image_path')) {
+            $image_path = $request->file('image_path')->store('menuCarGalleries', 'public');
+        }
+        
+        if ($request->hasFile('pdf')) {
+            $pdf_path = $request->file('pdf')->store('menuCarGalleries', 'public');
+        }
+
+        MenuCarGalleryItem::create(
+            [
+                'title' => $request->title,
+                'pdf_path' => $pdf_path,
+                'menu_car_gallery_id' => $request->menu_car_gallery_id,
+            ]
+        );
+
+        return redirect()->route('frontend.page.menuCarGallery.index');
+    }
+    public function menuCarGalleryItemUpdate(Request $request, MenuCarGalleryItem $menuCarGalleryItem)
+    {
+        $request->validate([
+            'title' => [
+                'required',
+                'string',
+                'max:191',
+                Rule::unique('menu_car_gallery_items', 'title')->ignore($menuCarGalleryItem->id), 
+            ],
+            'pdf' => 'nullable|file|mimes:pdf|max:51200',
+        ]);
+
+        if ($request->hasFile('image_path')) {
+            if($menuCarGalleryItem?->image_path) {
+                Storage::disk('public')->delete($menuCarGalleryItem->image_path);  
+            }
+            $menuCarGalleryItem->image_path = $request->file('image_path')->store('menuCarGalleries', 'public');
+        }
+        if ($request->hasFile('pdf')) {
+            if ($menuCarGalleryItem->pdf_path) {
+                Storage::disk('public')->delete($menuCarGalleryItem->pdf_path);
+            }
+            $menuCarGalleryItem->pdf_path = $request->file('pdf')->store('menuCarGalleries', 'public');
+        }
+
+        $menuCarGalleryItem->update(
+            [
+                'title' => $request->title,
+                'menu_car_gallery_id' => $request->menu_car_gallery_id,
+            ]
+        );
+
+        return redirect()->route('frontend.page.menuCarGallery.index');
+    }
+
+    public function menuCarGalleryItemChangeStatus(Request $request, MenuCarGalleryItem $menuCarGalleryItem)
+    {
+        $request->validate([
+            'id' => 'required|integer|exists:menu_car_gallery_items,id',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $menuCarGalleryItem->update(
+            [
+                'is_active' => $request->is_active,
+            ]
+        );
+
+        return redirect()->route('frontend.page.menuCarGallery.index');
+    }
+
+    public function getListMenuCarGalleryItems(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = MenuCarGalleryItem::orderBy('id', 'desc')->get();
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->make(true);
+        }
+    }
+    public function deleteSelectedMenuCarGalleryItems(Request $request)
+    {
+        $ids = $request->input('ids');
+        $menuCarGalleryItem = MenuCarGalleryItem::whereIn('id', $ids)->get();
+        if ($menuCarGalleryItem->isEmpty()) {
+            return redirect()->route('frontend.page.menuCarGallery.index', ['message' => 'No tax infos found with the provided IDs']);
+        }
+        foreach ($menuCarGalleryItem as $menuCarGalleryItem) {
+            if ($menuCarGalleryItem->pdf_path) {
+                Storage::disk('public')->delete($menuCarGalleryItem->pdf_path);
+            }
+            $menuCarGalleryItem->delete();
+        }
+        return redirect()->route('frontend.page.menuCarGallery.index');
+    }
+
+    public function menuCarGalleryItemPdfPreview(MenuCarGalleryItem $menuCarGalleryItem)
+    {
+
+        return Inertia::render('Admin/Frontend/Pages/MenuCarGalleries/PdfPreview', [
+            'item' => $menuCarGalleryItem,
+        ]);
+    }
+    public function menuCarGalleryItemDownloadPdf(MenuCarGalleryItem $menuCarGalleryItem)
+    {
+
+        if (!Storage::disk('public')->exists($menuCarGalleryItem->pdf_path)) {
+            abort(404, 'File not found');
+        }
+    
+        // Return the file for download
+        return Storage::disk('public')->download($menuCarGalleryItem->pdf_path);
     }
 
 

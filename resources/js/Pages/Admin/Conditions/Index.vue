@@ -38,6 +38,7 @@
                     class="check-all-row w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-boxdark-1 dark:border-gray-600"
                   />
                 </th>
+                <th class="w-[10%]">{{ $t("code") }}</th>
                 <th class="w-[70%]">{{ $t("name") }}</th>
                 <th class="w-[17%]">{{ $t("status") }}</th>
                 <th class="w-[10%] action-col">{{ $t("actions") }}</th>
@@ -50,7 +51,7 @@
         </div>
       </div>
     </div>
-    <AddOrEdit :show-modal="false"/>
+    <AddOrEdit :show-modal="false" />
   </DefaultLayout>
 </template>
 
@@ -71,7 +72,7 @@ const { statusFormat } = useHelper();
 import { useMainStore } from "@/stores/main";
 import { useCondition } from "@/stores/condition";
 
-import { events } from "@/events"
+import { events } from "@/events";
 
 const mainStore = useMainStore();
 const conditionStore = useCondition();
@@ -80,18 +81,16 @@ const { t } = useI18n();
 const tableData = ref(false);
 
 const openModalForm = () => {
-  events.emit('modal:open', {
+  events.emit("modal:open", {
     modal_title: "condition.add",
     event_type: "add",
   });
-}
+};
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
   { label: t("conditions"), url: null },
   { label: t("list"), url: null, is_active: true },
 ]);
-
-
 
 onMounted(() => {
   tableData.value = $("#car-condition").DataTable({
@@ -138,6 +137,7 @@ onMounted(() => {
           return checkBoxHtml;
         },
       },
+      { data: "code", name: "code" },
       { data: "name", name: "name" },
       {
         data: "is_active",
@@ -174,10 +174,10 @@ onMounted(() => {
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
                           onClick: (e) => {
                             e.preventDefault();
-                            events.emit('modal:open', {
+                            events.emit("modal:open", {
                               modal_title: "condition.edit",
                               event_type: "edit",
-                              item: row
+                              item: row,
                             });
                           },
                         },
@@ -190,7 +190,7 @@ onMounted(() => {
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
                           onClick: (e) => {
                             e.preventDefault();
-                            events.emit('confirm:open', [row.id]);
+                            events.emit("confirm:open", [row.id]);
                           },
                         },
                         [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
@@ -210,27 +210,25 @@ onMounted(() => {
   });
 });
 
-
-events.on('modal:success', () => {
+events.on("modal:success", () => {
   tableData.value.ajax.reload();
 });
 
 const btnDeleteSelected = () => {
-  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : []
-  events.emit('confirm:open', items);
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
+  events.emit("confirm:open", items);
 };
 
-events.on('confirm:confirmed', (data) => {
+events.on("confirm:confirmed", (data) => {
   const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : data;
   conditionStore.deleteConditions(items);
-})
-events.on('confirm:success', () => {
+});
+events.on("confirm:success", () => {
   tableData.value.ajax.reload();
   mainStore.clearSelectedRows();
-})
+});
 
 onBeforeUnmount(() => mainStore.clearSelectedRows());
-
 </script>
 
 <style lang="scss">

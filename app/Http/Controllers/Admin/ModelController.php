@@ -6,6 +6,7 @@ use Storage;
 use Inertia\Inertia;
 use App\Models\Brand;
 use App\Models\Model;
+use App\Models\OptionGroup;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
@@ -15,11 +16,23 @@ class ModelController extends Controller
 {
     public function index(Request $request)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars-models')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Models/Index');
     }
 
     public function create()
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('models-add')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Models/Create', [
             'brands' => Brand::all(),
         ]);
@@ -43,6 +56,12 @@ class ModelController extends Controller
 
     public function edit(Model $model)
     {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('models-edit')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return Inertia::render('Admin/Models/Edit', [
             'brands' => Brand::all(),
             'model' => $model,
@@ -73,13 +92,14 @@ class ModelController extends Controller
         return redirect()->route('models.index')->with('success', 'Car Model created successfully.');
     }
 
-    public function destroy(Request $request, Model $model)
-    {
-        $model->delete();
-        return redirect()->route('models.index');
-    }
     public function deleteSelected(Request $request)
-     {
+    {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('models-delete')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $ids = $request->input('ids');
         Model::whereIn('id', $ids)->delete();  
         return redirect()->route('models.index');
@@ -108,4 +128,49 @@ class ModelController extends Controller
             'models' => $models
         ]);
     }
+
+    public function getModelOptions(Request $request)
+    {
+        // Find the model with options and their groups
+        $model = Model::with(['options.group'])->find($request->model_id);
+
+        // If the model exists, group its options by group ID
+        $modelOptionsWithGroups = $model ? $model->options->groupBy(fn($option) => $option->group->id ?? 'no_group')
+            ->map(fn($group) => [
+                'group_id' => $group->first()->group->id ?? null,
+                'group_name' => $group->first()->group->name ?? 'No Group',
+                'items' => $group->map(fn($option) => [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                ])->values(),
+            ])->values() : collect();
+
+        // Get all available groups and their items
+        $allGroupsWithItems = OptionGroup::with('options')->get()->map(fn($group) => [
+            'group_id' => $group->id,
+            'group_name' => $group->name,
+            'items' => $group->options->map(fn($option) => [
+                'id' => $option->id,
+                'name' => $option->name,
+            ])->values(),
+        ]);
+
+        // Merge the model's options with all groups, ensuring no duplicates
+        $optionsWithGroups = $allGroupsWithItems->map(function ($group) use ($modelOptionsWithGroups) {
+            $matchingGroup = $modelOptionsWithGroups->firstWhere('group_id', $group['group_id']);
+            return $matchingGroup ?? $group; // Use model's group if exists, otherwise all group
+        })->sortBy('group_id')->values(); // Sort by group_id ascending
+
+        // Prepare message
+        $message = $optionsWithGroups->map(fn($group) => 
+            "Group: {$group['group_name']} (ID: {$group['group_id']}) has " . $group['items']->count() . " items."
+        )->values();
+
+        return response()->json([
+            'message' => $message,
+            'group_options' => $optionsWithGroups,
+        ]);
+    }
+
+
 }

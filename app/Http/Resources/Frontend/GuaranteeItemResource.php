@@ -16,7 +16,11 @@ class GuaranteeItemResource extends JsonResource
     {
         return [
             'title' => $this->title,
+            'image_path' => $this->image_full_path,
             'description' => $this->description,
+            'items' => $this->items->map(function($item) {
+                return $item->name;
+            })
         ];
     }
 }

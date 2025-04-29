@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 class Menu extends EloquentModel
 {
     use HasFactory;
-    protected $fillable = ['code', 'name'];
-    protected $appends = ['slug'];
+    protected $fillable = ['code', 'name', 'image_path', 'category_id'];
+    protected $appends = ['slug', 'image_full_path'];
     public $timestamps = false;
 
     public function getSlugAttribute(): string
@@ -28,9 +28,9 @@ class Menu extends EloquentModel
         return $this->belongsToMany(Model::class, 'menu_model');
     }
 
-    public function categories()
+    public function category()
     {
-        return $this->belongsToMany(Category::class, 'menu_category');
+        return $this->belongsTo(Category::class);
     }
 
     public function fuel_types()
@@ -55,6 +55,12 @@ class Menu extends EloquentModel
     public function passengers()
     {
         return $this->belongsToMany(Passenger::class, 'menu_passenger');
+    }
+
+    public function getImageFullPathAttribute()
+    {
+        $image_path = $this->attributes['image_path'];
+        return $image_path ? asset('storage/' . $image_path) : asset('assets/images/no-image.jpg');
     }
 
     

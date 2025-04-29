@@ -19,6 +19,7 @@ class PassengerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'code' => 'required|string|max:100|unique:passengers,code|regex:/^[^\s]+$/|max:100', 
             'no' => 'required|integer|max:100|unique:passengers,no',
         ]);
 
@@ -37,6 +38,13 @@ class PassengerController extends Controller
                 'integer',
                 'max:100',
                 Rule::unique('passengers', 'no')->ignore($passenger->id), 
+            ],
+            'code' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[^\s]+$/',
+                Rule::unique('passengers', 'code')->ignore($passenger->id), 
             ],
         ]);
         $passenger->update($validated);

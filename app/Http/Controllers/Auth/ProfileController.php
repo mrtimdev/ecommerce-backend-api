@@ -19,6 +19,7 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+
         return Inertia::render('Admin/Users/Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
@@ -28,10 +29,16 @@ class ProfileController extends Controller
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request)
     {
+        if(!auth()->user()->hasRole(['owner'])) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $request->user()->fill($request->validated());
-
+        $request->user()->name = "$request->first_name $request->last_name";
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
@@ -44,8 +51,14 @@ class ProfileController extends Controller
     /**
      * Delete the user's account.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
+        if(!auth()->user()->hasRole(['owner'])) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         $request->validate([
             'password' => ['required', 'current_password'],
         ]);

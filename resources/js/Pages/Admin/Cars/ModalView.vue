@@ -31,7 +31,11 @@
 
             <div
               class="mt-6"
-              v-if="carStore.car.galleries && !_.isEmpty(carStore.car.galleries)"
+              v-if="
+                (carStore.car.galleries && !_.isEmpty(carStore.car.galleries)) ||
+                carStore.car.youtube_video_id ||
+                carStore.car.featured_image
+              "
             >
               <h3 class="text-2xl font-semibold mb-2">{{ $t("galleries") }}</h3>
 
@@ -49,7 +53,16 @@
                 :modules="modules"
                 class="mySwiper"
               >
-                <swiper-slide>
+                <swiper-slide v-if="carStore.car.youtube_video_id">
+                  <iframe
+                    :src="`https://www.youtube.com/embed/${carStore.car.youtube_video_id}`"
+                    class="w-full !h-64 object-cover"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  ></iframe>
+                </swiper-slide>
+                <swiper-slide v-if="carStore.car.featured_image">
                   <img
                     :src="carStore.car.featured_image_full_path"
                     class="w-full !h-64 object-cover"
@@ -112,6 +125,24 @@
                   {{ carStore.car.sourced_link }}
                 </a>
                 <span v-else>N/A</span>
+              </p>
+            </div>
+            <div class="flex justify-between mb-4">
+              <p>
+                <strong>{{ $t("view") }}: </strong>
+                <span class="text-gray-400">
+                  <i class="fi fi-rr-eye text-[12px]"></i>
+                  {{ carStore.car.view_count }}
+                </span>
+              </p>
+            </div>
+            <div class="flex justify-between mb-4">
+              <p>
+                <strong>{{ $t("like") }}: </strong>
+                <span class="text-gray-400">
+                  <i class="fi fi-rr-heart text-[12px]"></i>
+                  {{ carStore.car.like_count }}
+                </span>
               </p>
             </div>
             <fieldset
@@ -287,7 +318,7 @@
                     <td class="py-2 px-4">
                       <div class="flex gap-1">
                         <span
-                          :style="{ background: carStore.car.color.code }"
+                          :style="{ background: carStore.car.color.hex }"
                           class="shadow-2 w-[20px] h-[20px] rounded-full"
                         ></span>
                         <span>{{ carStore.car.color.name }}</span>
@@ -349,11 +380,15 @@
                 <div v-for="(option, index) in carStore.car.options" :key="index">
                   <p class="!text-purple-600">{{ option.title }}</p>
                   <div
-                    v-for="(item, i) in option.data"
-                    :key="i"
-                    class="grid gap-2 grid-cols-1 ml-[20px]"
+                    class="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                   >
-                    <span class="text-md">. {{ item }}</span>
+                    <div
+                      v-for="(item, i) in option.data"
+                      :key="i"
+                      class="grid gap-2 grid-cols-1 text-start"
+                    >
+                      <span class="text-md">. {{ item }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -367,7 +402,7 @@
 
 <script setup>
 import _ from "lodash";
-import { ref } from "vue";
+import { ref, getCurrentInstance } from "vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 import { useCar } from "@/stores/car";
@@ -392,6 +427,11 @@ const { statusFormat, formatMoney, countryFlagFormat, formatDate } = useHelper()
 
 const carStore = useCar();
 
+const { proxy } = getCurrentInstance();
+
+import { useHelpers } from "@/helpers/useHelpers";
+const { isRole, isPermission } = useHelpers();
+
 // const formatDate = (dateStr) => {
 //   const options = { year: "numeric", month: "long", day: "numeric" };
 //   return new Date(dateStr).toLocaleDateString(undefined, options);
@@ -409,6 +449,24 @@ const car = ref(false);
 
 const modal_title = ref("car.details");
 events.on("modal:modalview:open", async (data) => {
+  if (!isRole("owner") && !isRole("admin") && !isPermission(["car-view"])) {
+    const Toast = proxy.$swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = proxy.$swal.stopTimer;
+        toast.onmouseleave = proxy.$swal.resumeTimer;
+      },
+    });
+    Toast.fire({
+      icon: "warning",
+      html: `<b>Access Denied:</b> You do not have the required permissions to access this feature.`,
+    });
+    return;
+  }
   modal_title.value = data.modal_title || "car.details";
   isVisible.value = true;
   if (data.item) {

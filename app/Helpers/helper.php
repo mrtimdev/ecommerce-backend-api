@@ -1,5 +1,11 @@
 <?php
 
+use Carbon\Carbon;
+use App\Models\User;
+use Twilio\Rest\Client;
+use App\Mail\Frontend\OtpMail;
+use Illuminate\Support\Facades\Mail;
+
 if (!function_exists('statusFormat')) {
     function statusFormat($status)
     {
@@ -84,5 +90,64 @@ if (!function_exists('extractFacebookVideoId')) {
             return $match[1];
         }
         return null;
+    }
+}
+
+
+if (!function_exists('sendOtpEmail')) {
+    /**
+     * Send OTP via Email to the user.
+     *
+     * @param \App\Models\User $user
+     * @return void
+     */
+    function sendOtpEmail(User $user, $is_new_email = false)
+    {
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        if($user) {
+            $user->update([
+                'otp' => $otp,
+                'otp_expired' => Carbon::now()->addMinutes(10),
+            ]);
+            if($is_new_email) {
+                $user->email = $user->new_email;
+            }
+            Mail::to($user->email)->send(new OtpMail($otp));
+        }
+    }
+}
+
+if (!function_exists('sendOtpPhone')) {
+    /**
+     * Send OTP via Phone using Firebase.
+     *
+     * @param \App\Models\User $user
+     * @param string $phoneNumber
+     * @return void
+     */
+    function sendOtpPhone(User $user)
+    {
+        // Initialize Firebase Auth
+        // $auth = (new Factory)->withServiceAccount(env('FIREBASE_CREDENTIALS_PATH'))->createAuth();
+        $appAuth = Firebase::project('OTP Testing')->auth();
+
+        // Generate a new 6-digit OTP
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        // Update the user record with OTP and expiration time
+        $user->update([
+            'otp' => $otp,
+            'otp_expired' => Carbon::now()->addMinutes(5), // OTP valid for 5 minutes
+        ]);
+
+        // Send OTP via Firebase (SMS)
+        try {
+            // Here Firebase Authentication is used to send OTP via phone number
+            $auth->sendPhoneNumberVerification($user->phone);  // This will trigger OTP via SMS
+        } catch (\Throwable $e) {
+            // Handle the exception
+            \Log::error("Error sending OTP via Firebase: " . $e->getMessage());
+        }
     }
 }

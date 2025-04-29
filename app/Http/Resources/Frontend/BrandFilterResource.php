@@ -17,6 +17,7 @@ class BrandFilterResource extends JsonResource
         return [
             'name' => $this->name,
             'code' => $this->code,
+            'image_path' => $this->image_full_path, 
             'count' => $this->cars_count,
         ];
     }

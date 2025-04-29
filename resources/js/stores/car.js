@@ -13,6 +13,7 @@ export const useCar = defineStore('car', () => {
     const car = ref(false)
     const galleries = ref(false)
     const loading = ref(true)
+    const groupOptions = ref([])
     const deleteCars = async (ids) => {
         // NProgress.start();
         const routeName = route('cars.destroy.selected', { ids: ids });
@@ -61,7 +62,15 @@ export const useCar = defineStore('car', () => {
         galleries.value = false
     }
 
-    
+    const setGroupOptions = (newOptions) => {
+        groupOptions.value = newOptions;
+    }
+    const getGroupOptions = () => {
+        axios.get(route("group.options")).then((res) => {
+            setGroupOptions(res.data.group_options); 
+            console.log({ res });
+        });
+    }
 
     return {
         deleteCars,
@@ -70,6 +79,9 @@ export const useCar = defineStore('car', () => {
         clearItem,
         loading,
         getCarGalleries,
-        galleries
+        galleries,
+        setGroupOptions,
+        getGroupOptions,
+        groupOptions
     }
 })

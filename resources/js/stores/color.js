@@ -11,6 +11,7 @@ import { ref } from 'vue'
 
 export const useColor = defineStore('color', () => {
     const form = useForm({
+        hex: '',
         name: '',
         description: '',
         code: '',
@@ -28,6 +29,7 @@ export const useColor = defineStore('color', () => {
             form.id = data.item.id
             form.name = data.item.name
             form.description = data.item.description ?? ''
+            form.hex = data.item.hex
             form.code = data.item.code
         }
         console.log({data})
@@ -51,6 +53,7 @@ export const useColor = defineStore('color', () => {
         form.id = null
         form.name = ''
         form.description = ''
+        form.hex = ''
         form.code = ''
         form.errors = {}
     }

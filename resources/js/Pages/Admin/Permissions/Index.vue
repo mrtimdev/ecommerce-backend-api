@@ -94,6 +94,13 @@ onMounted(() => {
         url: route("permissions.list"),
         type: "GET",
       },
+      stateSave: true,
+      stateSaveCallback: function (settings, data) {
+        localStorage.setItem("DataTables_" + settings.sInstance, JSON.stringify(data));
+      },
+      stateLoadCallback: function (settings) {
+        return JSON.parse(localStorage.getItem("DataTables_" + settings.sInstance));
+      },
       columns: [
         {
           data: "id",
@@ -160,21 +167,6 @@ onMounted(() => {
                           [
                             h("i", { class: "fi fi-ts-attribution-pencil mr-2" }),
                             t("edit"),
-                          ]
-                        ),
-                        h(
-                          "div",
-                          {
-                            class:
-                              "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                            onClick: (e) => {
-                              e.preventDefault();
-                              router.get(route("permissions.permissions", row.id));
-                            },
-                          },
-                          [
-                            h("i", { class: "fi fi-ts-workflow-setting-alt mr-2" }),
-                            t("permissions"),
                           ]
                         ),
                         h(

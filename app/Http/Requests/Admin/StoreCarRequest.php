@@ -22,7 +22,7 @@ class StoreCarRequest extends FormRequest
     public function rules()
     {
         return [
-            'sourced_link' => 'nullable|url',
+            'sourced_link' => 'nullable|url|unique:cars,sourced_link',
             'listing_date' => 'nullable|date',
             'code' => 'required|string|max:100|unique:cars,code',
             'name' => 'required|string|max:255',
@@ -84,7 +84,7 @@ class StoreCarRequest extends FormRequest
             'options.*.id' => 'integer|exists:options,id',
             'location' => 'required|array',
             'location.id' => 'required|integer|exists:countries,id',
-            'status' => 'required|string|in:available,booked,sold',
+            'status' => 'required|string|in:available,booked,sold,requesting',
 
             'youtube_link' => 'nullable|string|url',
             'towing_export_document' => 'required|numeric|min:0',

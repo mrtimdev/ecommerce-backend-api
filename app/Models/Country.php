@@ -14,6 +14,7 @@ class Country extends Model
     protected $fillable = [
         'name',
         'flag',
+        'flag_code',
         'code',
         'dial_code',
         'is_active'
@@ -35,7 +36,7 @@ class Country extends Model
 
     public function getFlagUrlAttribute(): string
     {
-        $code = strtolower($this->code);
+        $code = strtolower($this->flag_code);
       return "https://flagcdn.com/w40/{$code}.png";
     }
     public function getLocalFlagUrlAttribute()

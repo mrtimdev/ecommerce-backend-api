@@ -18,6 +18,11 @@ class MenuResource extends JsonResource
             'code' => $this->code,
             'name' => $this->name,
             'slug' => $this->slug,
+            'image_path' => $this->image_full_path,
+            'category' => [
+                'code' => $this->category->code,  
+                'name' => $this->category->name, 
+            ],
             'items' => [
                 'brands' => $this->brands->map(function($item) {
                     return [
@@ -26,12 +31,6 @@ class MenuResource extends JsonResource
                     ];
                 }),
                 'models' => $this->models->map(function($item) {
-                    return [
-                        'code' => $item->code,  
-                        'name' => $item->name, 
-                    ];
-                }),
-                'categories' => $this->categories->map(function($item) {
                     return [
                         'code' => $item->code,  
                         'name' => $item->name, 

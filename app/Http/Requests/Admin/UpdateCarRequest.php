@@ -22,7 +22,7 @@ class UpdateCarRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sourced_link' => 'nullable|url',
+            'sourced_link' => 'nullable|url|unique:cars,sourced_link,' . $this->car->id,
             'listing_date' => 'nullable|date',
             'code' => 'required|string|max:100|unique:cars,code,' . $this->car->id,
             'name' => 'required|string|max:255',
@@ -79,7 +79,7 @@ class UpdateCarRequest extends FormRequest
             'options.*.id' => 'integer|exists:options,id',
             'location' => 'required|array',
             'location.id' => 'required|integer|exists:countries,id',
-            'status' => 'required|string|in:available,booked,sold',
+            'status' => 'required|string|in:available,booked,sold,requesting',
 
             'youtube_link' => 'nullable|string|url',
             'towing_export_document' => 'required|numeric|min:0',

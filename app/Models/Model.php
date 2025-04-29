@@ -32,4 +32,9 @@ class Model extends EloquentModel
     {
         return $this->hasMany(Car::class);
     }
+
+    public function options()
+    {
+        return $this->belongsToMany(Option::class, 'model_options', 'model_id', 'option_id');
+    }
 }

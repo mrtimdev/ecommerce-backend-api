@@ -22,28 +22,30 @@ class UserRegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:15',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'username' => 'required|string|unique:users,username|max:255',
+            'phone' => 'required|string|max:20',
+            'terms' => 'required|boolean',
             'password' => 'required|string|min:8|confirmed',
-            'terms' => 'boolean', 
-            'type' => 'nullable|in:frontend',
         ];
     }
     public function messages(): array
     {
         return [
-            'first_name.required' => 'The first name is required.',
-            'last_name.required' => 'The last name is required.',
-            'email.required' => 'An email address is required.',
-            'email.unique' => 'This email is already registered.',
-            'username.required' => 'A username is required.',
+            'first_name.required' => 'First name is required.',
+            'last_name.required' => 'Last name is required.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Email must be a valid email address.',
+            'email.unique' => 'This email is already taken.',
+            'username.required' => 'Username is required.',
             'username.unique' => 'This username is already taken.',
-            'password.required' => 'The password is required.',
+            'phone.required' => 'Phone number is required.',
+            'terms.required' => 'You must agree to the terms.',
+            'password.required' => 'Password is required.',
+            'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
-            'terms.accepted' => 'You must agree to the Terms of Use.',
-            'type.in' => 'The user type must be frontend.',
         ];
     }
 }

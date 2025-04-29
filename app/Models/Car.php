@@ -7,13 +7,14 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use OwenIt\Auditing\Contracts\Auditable;
 
-class Car extends EloquentModel
+class Car extends EloquentModel implements Auditable
 {
-    use HasFactory;
+    use HasFactory, \OwenIt\Auditing\Auditable;
     
 
-    protected $fillable = ['sourced_link', 'listing_date' ,'code', 'name', 'slug', 'total_price', 'car_price', 'year', 'mileage', 'description', 'featured_image', 'is_featured', 'is_active', 'steering_id', 'engine_volume', 'size' ,'door', 'passenger_id', 'cylinder', 'water_flood_damaged', 'former_rental_car', 'former_taxi', 'recovered_theft', 'police_car', 'salvage_record', 'fuel_conversion', 'modified_seats', 'category_id', 'condition_id', 'brand_id', 'model_id', 'fuel_type_id', 'transmission_type_id', 'color_id', 'drive_type_id', 'location_id', 'status', 'youtube_link', 'towing_export_document', 'shipping', 'tax_import', 'clearance', 'service', 'first_payment', 'second_payment', 'third_payment', 'youtube_link', 'created_by', 'updated_by'];
+    protected $fillable = ['sourced_link', 'listing_date' ,'code', 'name', 'slug', 'total_price', 'car_price', 'year', 'mileage', 'description', 'featured_image', 'is_featured', 'is_active', 'steering_id', 'engine_volume', 'size' ,'door', 'passenger_id', 'cylinder', 'water_flood_damaged', 'former_rental_car', 'former_taxi', 'recovered_theft', 'police_car', 'salvage_record', 'fuel_conversion', 'modified_seats', 'category_id', 'condition_id', 'brand_id', 'model_id', 'fuel_type_id', 'transmission_type_id', 'color_id', 'drive_type_id', 'location_id', 'status', 'youtube_link', 'towing_export_document', 'shipping', 'tax_import', 'clearance', 'service', 'first_payment', 'second_payment', 'third_payment', 'youtube_link', 'created_by', 'updated_by', 'view_count', 'like_count', 'featured_at'];
     // ['plate_number', 'first_registered_date', 'engine_power', 'odometer_reading', ]
     protected $appends = ['featured_image_full_path'];
 
@@ -153,10 +154,18 @@ class Car extends EloquentModel
     {
         return $this->belongsToMany(Option::class, 'car_options');
     }
+    // public function options()
+    // {
+    //     return $this->hasManyThrough(Option::class, 'car_options', 'car_id', 'id', 'id', 'option_id');
+    // }
 
     public function order()
     {
         return $this->belongsTo(CustomerOrder::class);
+    }
+    public function orders()
+    {
+        return $this->hasMany(CustomerOrder::class);
     }
 
     public function user()
@@ -168,7 +177,7 @@ class Car extends EloquentModel
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-    public function updateddBy()
+    public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
@@ -188,6 +197,37 @@ class Car extends EloquentModel
                 ];
             })
             ->values();
+    }
+
+    public function getCarOptionsByGroupWithDetail()
+    {
+        return $this->options()
+            ->with('group')
+            ->get()
+            ->groupBy('group.id')
+            ->map(function ($options, $groupId) {
+                return [
+                    'group_id' => $groupId,
+                    'group_name' => $options->first()->group->name ?? 'No Group',
+                    'items' => $options->map(function ($option) {
+                        return [
+                            'id' => $option->id,
+                            'name' => $option->name,
+                        ];
+                    })->values(),
+                ];
+            })
+            ->values();
+    }
+
+    public function likeCounts()
+    {
+        return $this->hasMany(CarsLikeCount::class, 'car_id');
+    }
+
+    public function likes()
+    {
+        return $this->hasMany(CarsLikeCount::class, 'car_id');
     }
     
 
@@ -217,20 +257,21 @@ class Car extends EloquentModel
     public function paymentDetails(): array
     {
         $payments = [
-            'car_price',
-            'towing_export_document',
-            'shipping',
-            'tax_import',
-            'clearance',
-            'service',
-            'total_price',
+            'car_price' => 'Car Price',
+            'towing_export_document' => 'Export License Fee',
+            'shipping' => 'Shipping Fee',
+            'tax_import' => 'Import Tax',
+            'clearance' => 'Clearance Fee',
+            'service' => 'Import Service Fee',
+            'total_price' => 'Total Price',
         ];
-        return collect($payments)->filter(function ($payment) {
-            return $this->{$payment} !== null;
-        })->map(function ($payment) {
+    
+        return collect($payments)->filter(function ($title, $key) {
+            return $this->{$key} !== null;
+        })->map(function ($title, $key) {
             return [
-                'title' => __($payment),
-                'value' => $this->{$payment},
+                'title' => $title,
+                'value' => $this->{$key},
             ];
         })->values()->toArray();
     }

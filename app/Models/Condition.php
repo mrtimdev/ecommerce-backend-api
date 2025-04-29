@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Condition extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['code', 'name', 'is_active'];
     public $timestamps = false;
 
     protected $appends = ['status'];
@@ -20,5 +20,9 @@ class Condition extends Model
     public function getStatusAttribute(): string
     {
         return $this->is_active ? 'active' : 'inactive';
+    }
+    public function cars()
+    {
+        return $this->hasMany(Car::class);
     }
 }

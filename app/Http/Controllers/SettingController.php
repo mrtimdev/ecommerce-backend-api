@@ -95,7 +95,8 @@ class SettingController extends Controller
         $request->validate([
             'name' => 'required|string|max:50|unique:countries,name',      
             'flag' => 'nullable|string|max:8',            
-            'code' => 'required|string|size:2',           
+            'flag_code' => 'required|string|size:2',           
+            'code' => 'required|string|max:50',           
             'dial_code' => 'required|string|max:10',  
             'is_active' => ['required', 'boolean'],    
         ]);
@@ -103,6 +104,7 @@ class SettingController extends Controller
         Country::create([
             'name' => $request->name,
             'flag' => $request->flag,
+            'flag_code' => $request->flag_code,
             'code' => $request->code,
             'dial_code' => $request->dial_code,
             'is_active' => $request->is_active,
@@ -120,8 +122,9 @@ class SettingController extends Controller
                 'max:50',
                 Rule::unique('countries', 'name')->ignore($country->id), 
             ],    
-            'flag' => 'nullable|string|max:8',            
-            'code' => 'required|string|size:2',           
+            'flag' => 'nullable|string|max:8',    
+            'flag_code' => 'required|string|size:2',                  
+            'code' => 'required|string|max:50',            
             'dial_code' => 'required|string|max:10',   
             'is_active' => ['required', 'boolean'],    
         ]);
@@ -130,6 +133,7 @@ class SettingController extends Controller
         $country->update([
             'name' => $request->name,
             'flag' => $request->flag,
+            'flag_code' => $request->flag_code,
             'code' => $request->code,
             'dial_code' => $request->dial_code,
             'is_active' => $request->is_active,

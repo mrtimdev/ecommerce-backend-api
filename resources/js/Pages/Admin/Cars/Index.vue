@@ -41,6 +41,7 @@
                 <th class="w-[5%]">{{ $t("image") }}</th>
                 <th class="w-[5%]">{{ $t("code") }}</th>
                 <th class="w-[25%]">{{ $t("name") }}</th>
+                <th class="w-[25%]">{{ $t("sourced_link") }}</th>
                 <th class="w-[5%]">{{ $t("listing_date") }}</th>
                 <th class="w-[5%]">{{ $t("total_price") }}</th>
                 <th class="w-[5%]">{{ $t("year") }}</th>
@@ -66,12 +67,14 @@
     <ModalView :show-modal="false" />
     <ChangeGalleryImages :show-modal="false" />
     <ChangeFeaturedImage :show-modal="false" />
+    <ChangeSourcedLink :show-modal="false" />
   </DefaultLayout>
 </template>
 
 <script setup>
 import { Head, Link, router, useForm } from "@inertiajs/vue3";
 import ChangeFeaturedImage from "./ChangeFeaturedImage.vue";
+import ChangeSourcedLink from "./ChangeSourcedLink.vue";
 import ChangeGalleryImages from "./ChangeGalleryImages.vue";
 import ModalView from "./ModalView.vue";
 import CheckBox from "@/Components/Others/CheckBox.vue";
@@ -99,6 +102,8 @@ import { events } from "@/events";
 import { useMainStore } from "@/stores/main";
 
 const mainStore = useMainStore();
+import { useHelpers } from "@/helpers/useHelpers";
+const { isRole, isPermission } = useHelpers();
 
 const { t } = useI18n();
 const tableData = ref(false);
@@ -128,6 +133,13 @@ onMounted(() => {
       [5, 10, 25, 50, -1],
       [5, 10, 25, 50, 100, "All"],
     ],
+    stateSave: true,
+    stateSaveCallback: function (settings, data) {
+      localStorage.setItem("DataTables_" + settings.sInstance, JSON.stringify(data));
+    },
+    stateLoadCallback: function (settings) {
+      return JSON.parse(localStorage.getItem("DataTables_" + settings.sInstance));
+    },
     ajax: {
       url: route("cars.list"),
       type: "GET",
@@ -174,6 +186,7 @@ onMounted(() => {
       },
       { data: "code", name: "code" },
       { data: "name", name: "name" },
+      { data: "sourced_link", name: "sourced_link" },
       {
         data: "listing_date",
         name: "listing_date",
@@ -267,6 +280,21 @@ onMounted(() => {
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
                           onClick: (e) => {
                             e.preventDefault();
+                            events.emit("modal:sourcedLink:open", {
+                              event_type: "change_sourced_link",
+                              item: row,
+                            });
+                          },
+                        },
+                        [h("i", { class: "fa fa-link mr-2" }), t("sourced_link")]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
                             events.emit("modal:featuredimage:open", {
                               modal_title: "featured_image",
                               event_type: "change_featured_image",
@@ -292,29 +320,33 @@ onMounted(() => {
                         },
                         [h("i", { class: "fa fa-image mr-2" }), t("change_gallery")]
                       ),
-                      h(
-                        "div",
-                        {
-                          class:
-                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: (e) => {
-                            router.get(route("cars.edit", row.id));
-                          },
-                        },
-                        [h("i", { class: "fa fa-pencil mr-2" }), t("edit")]
-                      ),
-                      h(
-                        "div",
-                        {
-                          class:
-                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: (e) => {
-                            e.preventDefault();
-                            events.emit("confirm:open", [row.id]);
-                          },
-                        },
-                        [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
-                      ),
+                      (isRole("owner") && isRole("admin")) ||
+                        (isPermission(["car-edit"]) &&
+                          h(
+                            "div",
+                            {
+                              class:
+                                "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                              onClick: (e) => {
+                                router.get(route("cars.edit", row.id));
+                              },
+                            },
+                            [h("i", { class: "fa fa-pencil mr-2" }), t("edit")]
+                          )),
+                      (isRole("owner") && isRole("admin")) ||
+                        (isPermission(["car-delete"]) &&
+                          h(
+                            "div",
+                            {
+                              class:
+                                "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                              onClick: (e) => {
+                                e.preventDefault();
+                                events.emit("confirm:open", [row.id]);
+                              },
+                            },
+                            [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
+                          )),
                     ],
                   }
                 );
@@ -365,6 +397,24 @@ events.on("modal:success", () => {
 });
 
 const btnDeleteSelected = () => {
+  if (!isRole("owner") && !isRole("admin") && !isPermission(["car-delete"])) {
+    const Toast = proxy.$swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = proxy.$swal.stopTimer;
+        toast.onmouseleave = proxy.$swal.resumeTimer;
+      },
+    });
+    Toast.fire({
+      icon: "warning",
+      html: `<b>Access Denied:</b> You do not have the required permissions to access this feature.`,
+    });
+    return;
+  }
   const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
   events.emit("confirm:open", items);
 };
@@ -439,6 +489,33 @@ onBeforeUnmount(() => mainStore.clearSelectedRows());
 .table {
   .text-center {
     text-align: center !important;
+  }
+}
+
+#cars.table {
+  tbody,
+  thead {
+    tr {
+      td,
+      th {
+        &:nth-child(2),
+        &:nth-child(3) {
+          position: sticky;
+          @media (prefers-color-scheme: dark) {
+            background-color: #1e293b;
+          }
+          @media (prefers-color-scheme: light) {
+            background-color: unset;
+          }
+        }
+        &:nth-child(2) {
+          left: 0;
+        }
+        &:nth-child(3) {
+          left: 55px;
+        }
+      }
+    }
   }
 }
 </style>

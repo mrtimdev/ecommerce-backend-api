@@ -15,19 +15,19 @@
             <i class="fi fi-rr-trash w-4 h-4 me-2"></i>
             {{ $t("delete") }}
           </button>
-          <button
-            @click.prevent="openModalForm"
+          <Link
+            :href="route('users.create')"
             class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-1 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-purple-300"
           >
             <i class="fi fi-rr-plus w-4 h-4 me-2"></i>
             {{ $t("new") }}
-          </button>
+          </Link>
         </div>
       </div>
 
       <div class="content-body p-5">
         <div class="relative">
-          <table id="orders" class="table w-full text-sm text-left rtl:text-right">
+          <table id="users" class="table w-full text-sm text-left rtl:text-right">
             <thead class="text-center bg-white dark:bg-boxdark">
               <tr>
                 <th class="w-[3%]">
@@ -38,10 +38,13 @@
                     class="check-all-row w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:focus:ring-purple-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-boxdark-1 dark:border-gray-600"
                   />
                 </th>
+                <th class="w-[5%]">{{ $t("avatar") }}</th>
                 <th class="w-[20%]">{{ $t("name") }}</th>
                 <th class="w-[20%]">{{ $t("username") }}</th>
                 <th class="w-[20%]">{{ $t("email") }}</th>
                 <th class="w-[20%]">{{ $t("phone") }}</th>
+                <th class="w-[15%]">{{ $t("role") }}</th>
+                <th class="w-[15%]">{{ $t("is_active") }}</th>
                 <th class="w-[10%] action-col">{{ $t("actions") }}</th>
               </tr>
             </thead>
@@ -59,30 +62,35 @@
 <script setup>
 import CheckBox from "@/Components/Others/CheckBox.vue";
 import ActionButtons from "@/Components/Others/ActionButtons.vue";
-import { Head, router } from "@inertiajs/vue3";
+import { Head, router, Link, useForm } from "@inertiajs/vue3";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
-import { onMounted, onBeforeUnmount, reactive, h, createApp, ref } from "vue";
+import {
+  onMounted,
+  onBeforeUnmount,
+  reactive,
+  h,
+  createApp,
+  ref,
+  getCurrentInstance,
+} from "vue";
 
 import { i18n } from "@/i18n";
 import { useI18n } from "vue-i18n";
 import useHelper from "@/composables/useHelper";
-const { statusFormat } = useHelper();
+const { statusFormat, imageFormat } = useHelper();
 
 import { useMainStore } from "@/stores/main";
 
 import { events } from "@/events";
 
+import { useHelpers } from "@/helpers/useHelpers";
+const { isRole, isPermission } = useHelpers();
+
 const mainStore = useMainStore();
+const { proxy } = getCurrentInstance();
 
 const { t } = useI18n();
 const tableData = ref(false);
-
-const openModalForm = () => {
-  events.emit("modal:open", {
-    modal_title: "order.add",
-    event_type: "add",
-  });
-};
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
   { label: t("admin"), url: null },
@@ -90,12 +98,19 @@ const breadcrumbs = reactive([
   { label: t("list"), url: null, is_active: true },
 ]);
 
+const form = useForm({
+  ids: [],
+});
+
 onMounted(() => {
-  tableData.value = $("#orders").DataTable({
+  tableData.value = $("#users").DataTable({
     processing: true,
     serverSide: true,
     pageLength: 10,
-    order: [[1, "desc"]],
+    order: [
+      [1, "asc"],
+      // [4, "asc"],
+    ],
     aLengthMenu: [
       [5, 10, 25, 50, -1],
       [5, 10, 25, 50, 100, "All"],
@@ -103,6 +118,13 @@ onMounted(() => {
     ajax: {
       url: route("users.list"),
       type: "GET",
+    },
+    stateSave: true,
+    stateSaveCallback: function (settings, data) {
+      localStorage.setItem("DataTables_" + settings.sInstance, JSON.stringify(data));
+    },
+    stateLoadCallback: function (settings) {
+      return JSON.parse(localStorage.getItem("DataTables_" + settings.sInstance));
     },
     columns: [
       {
@@ -135,10 +157,35 @@ onMounted(() => {
           return checkBoxHtml;
         },
       },
+      {
+        data: "avatar_full_path",
+        orderable: false,
+        searchable: false,
+        className: "action-col text-center",
+        render: function (data, type, row, meta) {
+          return imageFormat(data);
+        },
+      },
       { data: "name", name: "name" },
       { data: "username", name: "username" },
       { data: "email", name: "email" },
-      { data: "mobile_no", name: "mobile_no" },
+      { data: "phone", name: "phone" },
+      {
+        data: "roles",
+        name: "roles",
+        className: "!text-center",
+        render: (data) => {
+          return statusFormat(data[0].name);
+        },
+      },
+      {
+        data: "is_active",
+        name: "is_active",
+        className: "text-center",
+        render: function (data, type, row, meta) {
+          return statusFormat(data ? "active" : "inactive");
+        },
+      },
       {
         data: "action",
         orderable: false,
@@ -164,11 +211,22 @@ onMounted(() => {
                           class:
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
                           onClick: (e) => {
-                            e.preventDefault();
-                            router.get(route("orders.detail", row.id));
+                            router.get(route("users.edit", row.id));
                           },
                         },
-                        [h("i", { class: "fi fi-ts-order-history mr-2" }), t("view")]
+                        [h("i", { class: "fa fa-pencil mr-2" }), t("edit")]
+                      ),
+                      h(
+                        "div",
+                        {
+                          class:
+                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                          onClick: (e) => {
+                            e.preventDefault();
+                            events.emit("confirm:open", [row.id]);
+                          },
+                        },
+                        [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
                       ),
                     ],
                   }
@@ -190,13 +248,55 @@ events.on("modal:success", () => {
 });
 
 const btnDeleteSelected = () => {
+  if (!isRole("owner") && !isRole("admin") && !isPermission(["user-delete"])) {
+    const Toast = proxy.$swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = proxy.$swal.stopTimer;
+        toast.onmouseleave = proxy.$swal.resumeTimer;
+      },
+    });
+    Toast.fire({
+      icon: "warning",
+      html: `<b>Access Denied:</b> You do not have the required permissions to access this feature.`,
+    });
+    return;
+  }
   const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
   events.emit("confirm:open", items);
 };
 
 events.on("confirm:confirmed", (data) => {
   const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : data;
-  events.emit("delete-items", items);
+  form.ids = items;
+  form.post(route("users.destroy.selected"), {
+    preserveScroll: true,
+    onSuccess: () => {
+      const Toast = proxy.$swal.mixin({
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.onmouseenter = proxy.$swal.stopTimer;
+          toast.onmouseleave = proxy.$swal.resumeTimer;
+        },
+      });
+      Toast.fire({
+        icon: "success",
+        title: `${t("item.count", items.length)} ${t("successfully_deleted")}`,
+      });
+      form.reset();
+      events.emit("confirm:cancel");
+      events.emit("confirm:success");
+    },
+    onError: () => {},
+  });
 });
 events.on("confirm:success", () => {
   tableData.value.ajax.reload();

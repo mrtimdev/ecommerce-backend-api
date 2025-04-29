@@ -52,7 +52,7 @@
         </div>
       </div>
     </div>
-    <AddOrEdit :show-modal="false"/>
+    <AddOrEdit :show-modal="false" />
   </DefaultLayout>
 </template>
 
@@ -66,14 +66,17 @@ import { onMounted, onBeforeUnmount, reactive, h, createApp, ref } from "vue";
 
 import { i18n } from "@/i18n";
 import { useI18n } from "vue-i18n";
-import { nextTick } from "vue";
+import { nextTick, getCurrentInstance } from "vue";
 import useHelper from "@/composables/useHelper";
 const { statusFormat } = useHelper();
 
 import { useMainStore } from "@/stores/main";
 import { useModel } from "@/stores/model";
 
-import { events } from "@/events"
+import { events } from "@/events";
+const { proxy } = getCurrentInstance();
+import { useHelpers } from "@/helpers/useHelpers";
+const { isRole, isPermission } = useHelpers();
 
 const mainStore = useMainStore();
 const modelStore = useModel();
@@ -82,18 +85,34 @@ const { t } = useI18n();
 const tableData = ref(false);
 
 const openModalForm = () => {
-  events.emit('modal:open', {
+  if (!isRole("owner") && !isRole("admin") && !isPermission(["models-add"])) {
+    const Toast = proxy.$swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = proxy.$swal.stopTimer;
+        toast.onmouseleave = proxy.$swal.resumeTimer;
+      },
+    });
+    Toast.fire({
+      icon: "warning",
+      html: `<b>Access Denied:</b> You do not have the required permissions to access this feature.`,
+    });
+    return;
+  }
+  events.emit("modal:open", {
     modal_title: "model.add",
     event_type: "add",
   });
-}
+};
 const breadcrumbs = reactive([
   { label: "Home", url: route("dashboard") },
   { label: t("models"), url: null },
   { label: t("list"), url: null, is_active: true },
 ]);
-
-
 
 onMounted(() => {
   tableData.value = $("#car-model").DataTable({
@@ -108,6 +127,13 @@ onMounted(() => {
     ajax: {
       url: route("models.list"),
       type: "GET",
+    },
+    stateSave: true,
+    stateSaveCallback: function (settings, data) {
+      localStorage.setItem("DataTables_" + settings.sInstance, JSON.stringify(data));
+    },
+    stateLoadCallback: function (settings) {
+      return JSON.parse(localStorage.getItem("DataTables_" + settings.sInstance));
     },
     columns: [
       {
@@ -171,35 +197,38 @@ onMounted(() => {
                   {},
                   {
                     default: () => [
-                      h(
-                        "div",
-                        {
-                          class:
-                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: (e) => {
-                            e.preventDefault();
-                            events.emit('modal:open', {
-                              modal_title: "model.edit",
-                              event_type: "edit",
-                              item: row
-                            });
-                            //router.visit(route("models.edit", row.id));
-                          },
-                        },
-                        [h("i", { class: "fa fa-pencil mr-2" }), t("edit")]
-                      ),
-                      h(
-                        "div",
-                        {
-                          class:
-                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: (e) => {
-                            e.preventDefault();
-                            events.emit('confirm:open', [row.id]);
-                          },
-                        },
-                        [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
-                      ),
+                      (isRole("owner") && isRole("admin")) ||
+                        (isPermission(["models-edit"]) &&
+                          h(
+                            "div",
+                            {
+                              class:
+                                "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                              onClick: (e) => {
+                                e.preventDefault();
+                                events.emit("modal:open", {
+                                  modal_title: "model.edit",
+                                  event_type: "edit",
+                                  item: row,
+                                });
+                              },
+                            },
+                            [h("i", { class: "fa fa-pencil mr-2" }), t("edit")]
+                          )),
+                      (isRole("owner") && isRole("admin")) ||
+                        (isPermission(["models-delete"]) &&
+                          h(
+                            "div",
+                            {
+                              class:
+                                "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
+                              onClick: (e) => {
+                                e.preventDefault();
+                                events.emit("confirm:open", [row.id]);
+                              },
+                            },
+                            [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
+                          )),
                     ],
                   }
                 );
@@ -215,27 +244,44 @@ onMounted(() => {
   });
 });
 
-
-events.on('modal:success', () => {
+events.on("modal:success", () => {
   tableData.value.ajax.reload();
 });
 
 const btnDeleteSelected = () => {
-  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : []
-  events.emit('confirm:open', items);
+  if (!isRole("owner") && !isRole("admin") && !isPermission(["models-delete"])) {
+    const Toast = proxy.$swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.onmouseenter = proxy.$swal.stopTimer;
+        toast.onmouseleave = proxy.$swal.resumeTimer;
+      },
+    });
+    Toast.fire({
+      icon: "warning",
+      html: `<b>Access Denied:</b> You do not have the required permissions to access this feature.`,
+    });
+    mainStore.clearSelectedRows();
+    return;
+  }
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
+  events.emit("confirm:open", items);
 };
 
-events.on('confirm:confirmed', (data) => {
+events.on("confirm:confirmed", (data) => {
   const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : data;
   modelStore.deleteModels(items);
-})
-events.on('confirm:success', () => {
+});
+events.on("confirm:success", () => {
   tableData.value.ajax.reload();
   mainStore.clearSelectedRows();
-})
+});
 
 onBeforeUnmount(() => mainStore.clearSelectedRows());
-
 </script>
 
 <style lang="scss">

@@ -14,6 +14,12 @@ class PermissionController extends Controller
 {
     public function index(Request $request)
     {
+        if(!auth()->user()->hasRole('owner')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
         return inertia('Admin/Permissions/Index');
     }
     public function getPermissionsList(Request $request)

@@ -15,4 +15,13 @@ class Service extends Model
         return $this->hasMany(ServiceItem::class);
     }
 
+    protected $appends = ['image_full_path'];
+
+    
+    public function getImageFullPathAttribute()
+    {
+        $image_path = $this->image_path;
+        return $image_path ? asset('storage/' . $image_path) : asset('assets/images/no-image.jpg');
+    }
+
 }

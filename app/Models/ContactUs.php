@@ -16,6 +16,7 @@ class ContactUs extends Model
         'facebook_page',
         'youtube',
         'tiktok',
+        'contact_label',
         'address',
         'image_path'
     ];

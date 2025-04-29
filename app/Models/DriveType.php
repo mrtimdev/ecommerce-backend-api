@@ -21,4 +21,8 @@ class DriveType extends Model
             set: fn (bool $value) => $value ? 1 : 0 
         );
     }
+    public function cars()
+    {
+        return $this->hasMany(Car::class);
+    }
 }

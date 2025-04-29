@@ -13,21 +13,27 @@ class CustomerOrder extends Model
         'user_id',
         'car_id',
         'order_no',
-        'full_name',
-        'email',
-        'phone',
-        'telegram_or_phone',
         'detail',
         'price',
         'location',
+        'item_name',
         'item_code',
         'link',
         'link_korea',
         'status',
+        'type',
+        'order_type'
     ];
+
+
+
     public function car()
     {
         return $this->belongsTo(Car::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
     protected static function booted()
     {

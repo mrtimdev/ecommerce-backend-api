@@ -43,6 +43,8 @@ import ActionButtons from '@/components/Others/ActionButtons.vue';
 import InputError from '@/Components/Others/InputError.vue';
 import VueMultiselect from 'vue-multiselect'
 
+import functionHelpers from './helpers/functionHelpers';
+
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 DataTable.use(DataTablesCore);
@@ -66,7 +68,8 @@ createInertiaApp({
           .use(ZiggyVue)
           .use(createPinia())
           .use(i18n)
-          .use(VueSweetalert2, options)
+          .use(VueSweetalert2)
+          .use(functionHelpers)
           .component('ConfirmationModal', ConfirmationModal)
           .component('Modal', Modal)
           .component('Bc', Breadcrumb)
@@ -75,6 +78,7 @@ createInertiaApp({
           .component('InputError', InputError)
           .component('LoadingIcon', LoadingIcon)
           .component('MultiSelect', VueMultiselect)
+          
           .mount(el);
     },
     progress: {

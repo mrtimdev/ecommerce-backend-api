@@ -11,6 +11,7 @@ import { ref } from 'vue'
 
 export const useCondition = defineStore('condition', () => {
     const form = useForm({
+        code: '',
         name: '',
         is_active: true,
     })
@@ -25,6 +26,7 @@ export const useCondition = defineStore('condition', () => {
 
         if (data.event_type === 'edit') {
             form.id = data.item.id
+            form.code = data.item.code
             form.name = data.item.name
             form.is_active = data.item.is_active
         }
@@ -48,7 +50,6 @@ export const useCondition = defineStore('condition', () => {
         form.id = null
         form.code = ''
         form.name = ''
-        form.brand_id = ''
         form.is_active = true
         form.errors = {}
     }
