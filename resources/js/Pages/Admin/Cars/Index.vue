@@ -492,7 +492,7 @@ onBeforeUnmount(() => mainStore.clearSelectedRows());
   }
 }
 
-#cars.table {
+/*#cars.table {
   tbody,
   thead {
     tr {
@@ -509,13 +509,20 @@ onBeforeUnmount(() => mainStore.clearSelectedRows());
           }
         }
         &:nth-child(2) {
-          left: 0;
+          left: -20px;
+          border-right: 1px solid rgb(89, 91, 94) !important;
         }
         &:nth-child(3) {
-          left: 55px;
+          left: 40px;
+        }
+        &:nth-last-child(1) {
+          position: sticky;
+        }
+        &:nth-last-child(1) {
+          right: -20px;
         }
       }
     }
   }
-}
+}*/
 </style>
