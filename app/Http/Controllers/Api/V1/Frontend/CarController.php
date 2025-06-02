@@ -124,7 +124,15 @@ class CarController extends Controller
         $minPrice = $request->input('priceFrom');
         $maxPrice = $request->input('priceTo');
 
+        $location = $request->input('location'); 
+
         $perPage = $request->input('pageSize', 10);
+
+        if ($location) {
+            $query->whereHas('location', function($q) use ($location) {
+                $q->where('code', '=', $location); 
+            });
+        }
 
         if ($brand) {
             $query->whereHas('brand', function($q) use ($brand) {
@@ -249,6 +257,10 @@ class CarController extends Controller
                     ->orWhere('year', 'like', "%{$filter}%")
                     ->orWhere('plate_number', 'like', "%{$filter}%")
                     ->orWhere('description', 'like', "%{$filter}%")
+   
+                    ->orWhereHas('location', function($q) use ($filter) {
+                        $q->where('name', 'like', "%{$filter}%");
+                    })
                     ->orWhereHas('brand', function($q) use ($filter) {
                         $q->where('name', 'like', "%{$filter}%");
                     })
