@@ -19,20 +19,21 @@ class CarController extends Controller
         $sortOrder = $request->input('sort_order', 'asc');
         $perPage = $request->input('per_page', 10);
         $filter = $request->input('filter'); // Get the filter input
-    
+
         // Validate sort field
         if (!in_array($sortField, ['id', 'code', 'name', 'plate_number', 'current_price', 'previous_price', 'year', 'mileage', 'is_active'])) {
             return response()->json(['error' => 'Invalid sort field. Available fields: [id, code, name, plate_number, current_price, previous_price, year, mileage, is_active]'], 400);
         }
-    
+
         // Validate sort order
         if (!in_array($sortOrder, ['asc', 'desc'])) {
             return response()->json(['error' => 'Invalid sort order'], 400);
         }
-    
+
         // Query the cars
         $query = Car::query();
-    
+        // $query->whereNull('client_id')->where('type', 'owner');
+
         // Apply filter if provided
         if ($filter) {
             $query->where(function($q) use ($filter) {
@@ -82,7 +83,7 @@ class CarController extends Controller
             });
         }
 
-        // $brand = $request->input('brand'); 
+        // $brand = $request->input('brand');
         // $model = $request->input('model');
         // $category = $request->input('category');
         // $condition = $request->input('condition');
@@ -104,7 +105,7 @@ class CarController extends Controller
 
 
         # follow autowini
-        $brand = $request->input('make'); 
+        $brand = $request->input('make');
         $model = $request->input('subModel');
         $category = $request->input('category');
         $condition = $request->input('condition');
@@ -124,85 +125,85 @@ class CarController extends Controller
         $minPrice = $request->input('priceFrom');
         $maxPrice = $request->input('priceTo');
 
-        $location = $request->input('location'); 
+        $location = $request->input('location');
 
         $perPage = $request->input('pageSize', 10);
 
         if ($location) {
             $query->whereHas('location', function($q) use ($location) {
-                $q->where('code', '=', $location); 
+                $q->where('code', '=', $location);
             });
         }
 
         if ($brand) {
             $query->whereHas('brand', function($q) use ($brand) {
-                $q->where('code', '=', $brand); 
+                $q->where('code', '=', $brand);
             });
         }
-    
+
         if ($model) {
             $query->whereHas('model', function($q) use ($model) {
-                $q->where('code', '=', $model); 
+                $q->where('code', '=', $model);
             });
         }
 
         if ($category) {
             $query->whereHas('category', function($q) use ($category) {
-                $q->where('code', '=', $category); 
+                $q->where('code', '=', $category);
             });
         }
         if ($condition) {
             $query->whereHas('condition', function($q) use ($condition) {
-                $q->where('code', '=', $condition); 
+                $q->where('code', '=', $condition);
             });
         }
         if ($fuel_type) {
             $query->whereHas('fuel_type', function($q) use ($fuel_type) {
-                $q->where('code', '=', $fuel_type); 
+                $q->where('code', '=', $fuel_type);
             });
         }
         if ($fuel_type) {
             $query->whereHas('fuel_type', function($q) use ($fuel_type) {
-                $q->where('code', '=', $fuel_type); 
+                $q->where('code', '=', $fuel_type);
             });
         }
         if ($transmission_type) {
             $query->whereHas('transmission_type', function($q) use ($transmission_type) {
-                $q->where('code', '=', $transmission_type); 
+                $q->where('code', '=', $transmission_type);
             });
         }
         if ($drive_type) {
             $query->whereHas('drive_type', function($q) use ($drive_type) {
-                $q->where('code', '=', $drive_type); 
+                $q->where('code', '=', $drive_type);
             });
         }
         if ($steering) {
             $query->whereHas('steering', function($q) use ($steering) {
-                $q->where('code', '=', $steering); 
+                $q->where('code', '=', $steering);
             });
         }
         if ($color) {
             $query->whereHas('color', function($q) use ($color) {
-                $q->where('code', '=', $color); 
+                $q->where('code', '=', $color);
             });
         }
         if ($passenger) {
             $query->whereHas('passenger', function($q) use ($passenger) {
-                $q->where('no', '=', $passenger); 
+                $q->where('no', '=', $passenger);
             });
         }
         if ($hot_mark) {
             $query->orWhereHas('hot_marks', function($q) use ($hot_mark) {
-                $q->where('code', '=', $hot_mark); 
+                $q->where('code', '=', $hot_mark);
             });
         }
         if ($option) {
             $query->orWhereHas('options', function($q) use ($option) {
-                $q->where('code', '=', $option); 
+                $q->where('code', '=', $option);
             });
         }
 
-        
+
 
         if ($modelYearFrom) {
             $query->where('year', '>=', $modelYearFrom);
@@ -224,10 +225,9 @@ class CarController extends Controller
         if ($maxPrice) {
             $query->where('total_price', '<=', $maxPrice);
         }
-    
         // Order and paginate the results
         $cars = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
-    
+
         return CarDetailResource::collection($cars);
     }
 
@@ -235,20 +235,20 @@ class CarController extends Controller
         $sortField = $request->input('sort_field', 'id');
         $sortOrder = $request->input('sort_order', 'asc');
         $perPage = $request->input('per_page', 10);
-        $filter = $request->input('filter'); 
-    
+        $filter = $request->input('filter');
+
         // Validate sort field
         if (!in_array($sortField, ['id', 'code', 'name', 'plate_number', 'current_price', 'previous_price', 'year', 'mileage', 'is_active'])) {
             return response()->json(['error' => 'Invalid sort field. Available fields: [id, code, name, plate_number, current_price, previous_price, year, mileage, is_active]'], 400);
         }
-    
+
         // Validate sort order
         if (!in_array($sortOrder, ['asc', 'desc'])) {
             return response()->json(['error' => 'Invalid sort order'], 400);
         }
-    
-        $query = Car::query();
 
+        $query = Car::query();
+        // $query->whereNull('client_id')->where('type', 'owner');
         if ($filter) {
             $query->where(function($q) use ($filter) {
                 $q->where('code', 'like', "%{$filter}%")
@@ -257,7 +257,7 @@ class CarController extends Controller
                     ->orWhere('year', 'like', "%{$filter}%")
                     ->orWhere('plate_number', 'like', "%{$filter}%")
                     ->orWhere('description', 'like', "%{$filter}%")
-   
+
                     ->orWhereHas('location', function($q) use ($filter) {
                         $q->where('name', 'like', "%{$filter}%");
                     })
@@ -302,7 +302,7 @@ class CarController extends Controller
         }
         // Order and paginate the results
         $cars = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
-    
+
         return CarDetailResource::collection($cars);
     }
 
@@ -320,9 +320,9 @@ class CarController extends Controller
                 'message' => 'Item not found.',
             ], 404);
         }
-        
+
         $query = Car::where('id', '!=', $car->id);
-        
+
         if ($model) {
             $query->whereHas('model', function ($q) use ($model) {
                 $q->where('name', 'like', "%{$model}%");
@@ -339,7 +339,7 @@ class CarController extends Controller
             });
         }
         $cars = $query->orderBy($sortField, $sortOrder)->paginate($perPage);
-    
+
         return CarDetailResource::collection($cars);
     }
 
@@ -365,7 +365,7 @@ class CarController extends Controller
             'data' => null,
             'message' => 'Item not found.',
         ], 404);
-        
+
     }
 
     public function updateView(Request $request)

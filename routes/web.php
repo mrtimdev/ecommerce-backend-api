@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\ModelController;
+use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FuelTypeController;
@@ -36,8 +37,16 @@ Route::get('/', [DashboardController::class, 'index'])->middleware(['auth', 'ver
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 
 
+Route::middleware('auth')->prefix('client')->group(function () {
+    Route::prefix('/cars')->group(function() {
+        Route::get('/', [ClientController::class, 'clientCarsIndex'])->name('client.cars.index');
+        Route::get('/list', [ClientController::class, 'getListCars'])->name('client.cars.list');
+    });
+});
+
+
 Route::middleware('auth')->prefix('admin')->group(function () {
-    
+
 
     Route::get('/cars/all', [CarController::class, 'getCars'])->name('cars.all');
     Route::get('/cars/list', [CarController::class, 'getListCars'])->name('cars.list');
@@ -70,7 +79,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('categories/{category}/delete', [CategoryController::class, 'destroy'])->name('categories.destroy');
     Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
     Route::post('categories/{category}/update', [CategoryController::class, 'update'])->name('categories.update');
-    
+
 
     Route::get('/conditions/all', [ConditionController::class, 'getConditions'])->name('conditions.list');
     Route::post('/conditions/delete-selected', [ConditionController::class, 'deleteSelected'])->name('conditions.destroy.selected');
@@ -90,7 +99,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::delete('brands/{brand}/delete', [BrandController::class, 'destroy'])->name('brands.destroy');
     Route::get('brands/{brand}/edit', [BrandController::class, 'edit'])->name('brands.edit');
     Route::post('brands/{brand}/update', [BrandController::class, 'update'])->name('brands.update');
-    
+
     Route::get('/models/by-brands', [ModelController::class, 'getModelsByBrand'])->name('models.by.brand');
     Route::get('/models/get-options', [ModelController::class, 'getModelOptions'])->name('models.options');
     Route::get('/models/all', [ModelController::class, 'getModels'])->name('models.list');
@@ -183,7 +192,7 @@ Route::middleware('auth')->prefix('admin')->name('settings.')->group(function ()
         Route::post('/shipping', [SettingController::class, 'shipping'])->name('shipping');
         Route::post('/login_logo', [SettingController::class, 'login_logo'])->name('login_logo');
         Route::post('/site_configs', [SettingController::class, 'site_configs'])->name('site_configs');
-    
+
         Route::get('/countries/list', [SettingController::class, 'getCountries'])->name('countries.list');
         Route::get('/countries/all', [SettingController::class, 'getAllCountries'])->name('countries.all');
         Route::post('/countries/delete-selected', [SettingController::class, 'deleteSelectedCountries'])->name('countries.destroy.selected');
@@ -191,7 +200,7 @@ Route::middleware('auth')->prefix('admin')->name('settings.')->group(function ()
         Route::post('/countries', [SettingController::class, 'countryStore'])->name('countries.store');
         Route::post('/countries/{country}', [SettingController::class, 'countryUpdate'])->name('countries.update');
     });
-    
+
 });
 
 # frontend routes
@@ -211,31 +220,31 @@ Route::middleware('auth')->prefix('admin')->group(function () {
             Route::get('/sliders', [FrontendController::class, 'sliderIndex'])->name('sliders.index');
             Route::post('/sliders', [FrontendController::class, 'sliderStore'])->name('sliders.store');
             Route::post('/sliders/{slider}', [FrontendController::class, 'sliderUpdate'])->name('sliders.update');
-            
+
             # contact us page
             Route::get('/contact-us', [FrontendController::class, 'contactUsIndex'])->name('contactus.index');
             Route::post('/contact-us-store', [FrontendController::class, 'storeContactUs'])->name('contactus.store');
-            
+
             Route::get('/agency-contact/khmer', [FrontendController::class, 'agencyContactKhIndex'])->name('agencycontact-kh.index');
             Route::get('/agency-contact/korea', [FrontendController::class, 'agencycontactKrIndex'])->name('agencycontact-kr.index');
             Route::post('/agency-contact-store', [FrontendController::class, 'storeAgencyContact'])->name('agencycontact.store');
 
-            
+
 
             Route::get('/videos/all', [FrontendController::class, 'getVideos'])->name('videos.list');
             Route::post('/videos/delete-selected', [FrontendController::class, 'deleteSelectedVideos'])->name('videos.destroy.selected');
             Route::get('/videos', [FrontendController::class, 'videoIndex'])->name('videos.index');
             Route::post('/videos', [FrontendController::class, 'videoStore'])->name('videos.store');
             Route::post('/videos/{video}', [FrontendController::class, 'videoUpdate'])->name('videos.update');
-            
+
 
             Route::get('/stories/all', [FrontendController::class, 'getStories'])->name('stories.list');
             Route::post('/stories/delete-selected', [FrontendController::class, 'deleteSelectedStories'])->name('stories.destroy.selected');
             Route::get('/stories', [FrontendController::class, 'storyIndex'])->name('stories.index');
             Route::post('/stories', [FrontendController::class, 'storyStore'])->name('stories.store');
             Route::post('/stories/{story}', [FrontendController::class, 'storyUpdate'])->name('stories.update');
-            
-            
+
+
             Route::get('/services/items/all', [FrontendController::class, 'getListServiceItems'])->name('serviceItems.list');
             Route::post('/services/delete-item-selected', [FrontendController::class, 'deleteSelectedServiceItems'])->name('serviceItems.destroy.selected');
             Route::get('/services', [FrontendController::class, 'serviceIndex'])->name('services.index');
@@ -321,7 +330,7 @@ Route::get('/assets/country/{code}/flags', function (Request $req, $code) {
 })->name('country.flag.code');
 
 Route::get('/link', function() {
-    
+
     $storagePath = "/home1/obbivemy/admin_reachautoimport_files/storage/app/public";
     $linkPath = "/home1/obbivemy/admin.reachautoimport/storage";
 

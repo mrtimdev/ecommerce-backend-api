@@ -197,6 +197,17 @@ const menuGroups = ref([
           ]
         : []),
 
+      ...(isRole("owner") || isRole("admin")
+        ? [
+            {
+              icon: `<i class="mt-[5px] fi fi-tr-car-side"></i>`,
+              label: "Client Cars Listing",
+              routeName: "client.cars.index",
+              is_in_route: route().current("cars.*") ? true : false,
+            },
+          ]
+        : []),
+
       ...(isRole("owner") || isRole("admin") || isPermission(["frontends"])
         ? [
             {

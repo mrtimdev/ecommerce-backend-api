@@ -30,6 +30,7 @@ use App\Http\Requests\Admin\UpdateCarRequest;
 use App\Http\Resources\Frontend\CarDetailResource;
 use App\Http\Resources\Frontend\CarGalleryResource;
 use App\Http\Resources\Frontend\CarGalleryCollection;
+use App\Http\Resources\Frontend\ClientCarDetailResource;
 
 class CarController extends Controller
 {
@@ -152,7 +153,7 @@ class CarController extends Controller
         if ($request->has('options')) {
             $car->options()->attach(collect($request->input('options'))->pluck('id'));
         }
-        
+
         if ($request->hasFile('gallery_images')) {
             foreach ($request->file('gallery_images') as $image) {
                 $galleryPath = $image->store('cars/gallery', 'public');
@@ -250,7 +251,7 @@ class CarController extends Controller
             if ($car->images()->exists()) {
                 // foreach ($car->images as $image) {
                 //     Storage::disk('public')->delete($image->image_path);
-                //     $image->delete(); 
+                //     $image->delete();
                 // }
             }
             foreach ($request->file('gallery_images') as $image) {
@@ -334,7 +335,7 @@ class CarController extends Controller
         $allOptionsWithGroups = $carOptionsWithGroups->merge($modelOptionsWithGroups)->sortBy('group_id')->values();
 
         // Prepare message
-        $message = $allOptionsWithGroups->map(fn($group) => 
+        $message = $allOptionsWithGroups->map(fn($group) =>
             "Group: {$group['group_name']} (ID: {$group['group_id']}) has " . $group['items']->count() . " items."
         )->values();
 
@@ -347,6 +348,9 @@ class CarController extends Controller
     public function show(Request $request, Car $car)
     {
         if($car) {
+            if($car->type == "client") {
+                return new ClientCarDetailResource($car);
+            }
             return new CarDetailResource($car);
         }
     }
@@ -378,7 +382,7 @@ class CarController extends Controller
             if ($car->images()->exists()) {
                 foreach ($car->images as $image) {
                     Storage::disk('public')->delete($image->image_path);
-                    $image->delete(); 
+                    $image->delete();
                 }
             }
 
@@ -386,7 +390,7 @@ class CarController extends Controller
             $car->options()->detach();
             CarsLikeCount::where('car_id', $car->id)->delete();
         }
-        Car::whereIn('id', $ids)->delete();  
+        Car::whereIn('id', $ids)->delete();
         return redirect()->route('cars.index');
     }
 
@@ -433,6 +437,8 @@ class CarController extends Controller
         if (!auth()->user()->hasRole(['owner', 'admin'])) {
             $query->where('created_by', auth()->id());
         }
+        $query->whereNull('client_id');
+        $query->where('type', 'owner');
         return DataTables::of($query)
         ->addIndexColumn()
         ->addColumn('total_price', fn($row) => $row->total_price)
@@ -449,7 +455,7 @@ class CarController extends Controller
     {
         if ($carImage) {
             Storage::disk('public')->delete($carImage->image_path);
-            $carImage->delete(); 
+            $carImage->delete();
             return response()->json([
                 'status' => 'success'
             ]);
@@ -464,7 +470,7 @@ class CarController extends Controller
             if ($car->images()->exists()) {
                 // foreach ($car->images as $image) {
                 //     Storage::disk('public')->delete($image->image_path);
-                //     $image->delete(); 
+                //     $image->delete();
                 // }
             }
             foreach ($request->file('gallery_images') as $image) {
@@ -515,11 +521,18 @@ class CarController extends Controller
             ]);
         }
         return Inertia::render('Admin/Cars/Featured', [
-            'cars' => fn () => Car::where('is_featured', 0)->orderBy('id', 'desc')->get(),
-            'featured_count' => fn () => Car::where('is_featured', 1)->count()
+            'cars' => fn () => Car::where('is_featured', 0)
+                ->whereNull('client_id')
+                ->where('type', 'owner')
+                ->orderBy('id', 'desc')->get(),
+            'featured_count' => fn () => Car::where('is_featured', 1)
+                ->whereNull('client_id')
+                ->where('type', 'owner')
+                ->count(),
+
         ]);
     }
-    
+
     public function getCarsFeatured(Request $request)
     {
         $query = Car::with(['category', 'condition', 'brand', 'model', 'fuelType', 'images'])
@@ -554,6 +567,8 @@ class CarController extends Controller
         if (!auth()->user()->hasRole(['owner', 'admin'])) {
             $query->where('created_by', auth()->id());
         }
+        $query->whereNull('client_id');
+        $query->where('type', 'owner');
         return DataTables::of($query)
         ->addIndexColumn()
         ->addColumn('total_price', fn($row) => $row->total_price)
@@ -590,7 +605,7 @@ class CarController extends Controller
     }
 
 
-    
+
 
 
 }

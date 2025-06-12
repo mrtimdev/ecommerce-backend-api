@@ -12,9 +12,11 @@ use App\Http\Controllers\Api\V1\Frontend\SettingController;
 use App\Http\Controllers\Api\V1\Frontend\CategoryController;
 use App\Http\Controllers\Api\V1\Frontend\FrontendController;
 use App\Http\Controllers\Api\V1\Frontend\FuelTypeController;
+use App\Http\Controllers\Api\V1\Frontend\ClientCarController;
 use App\Http\Controllers\Api\V1\Frontend\ConditionController;
 use App\Http\Controllers\Api\V1\Frontend\CustomerOrderController;
 use App\Http\Controllers\Api\V1\Frontend\Auth\VerifyEmailController;
+use App\Http\Controllers\Api\V1\Frontend\CarSpecificationController;
 use App\Http\Controllers\Api\V1\Frontend\TransmissionTypeController;
 use App\Http\Controllers\Api\V1\Frontend\Auth\OtpVerificationController;
 use App\Http\Controllers\Api\V1\Frontend\Auth\EmailVerificationNotificationController;
@@ -52,7 +54,7 @@ Route::group(['prefix' => 'user'], function () {
     #email
     Route::post('/signup/verify-code', [OtpVerificationController::class, 'registerVerifyCode']); #  verify when register
     Route::post('/new-password/verify-code', [OtpVerificationController::class, 'newPasswordVerifyCode']);
-    
+
     Route::post('/new-code/resend-code', [OtpVerificationController::class, 'resendCode']);
     Route::post('/new-email/resend-code', [OtpVerificationController::class, 'resendCodeForNewEmail']);
     Route::post('/reset-password', [UserController::class, 'resetPassword']);
@@ -63,7 +65,7 @@ Route::middleware(['auth:api'])->group(function () {
 Route::middleware(['auth:api'])->group(function () {
     Route::group(['prefix' => 'auth'], function () {
         Route::get('/profile', [UserController::class, 'profile']);
-        
+
         Route::post('/update-info', [UserController::class, 'updateInfo']);
         Route::post('/change-email', [UserController::class, 'updateEmail']);
         Route::post('/username-update', [UserController::class, 'updateUsername']);
@@ -92,11 +94,15 @@ Route::prefix('')->group(function () {
     Route::get('/fuel_types', [FuelTypeController::class, 'index']);
     Route::get('/transmission_types', [TransmissionTypeController::class, 'index']);
     Route::get('/models', [ModelController::class, 'index']);
+    Route::get('/drive_types', [CarSpecificationController::class, 'getDriveTypes']);
+    Route::get('/steerings', [CarSpecificationController::class, 'getSteerings']);
+    Route::get('/passengers', [CarSpecificationController::class, 'getPassengers']);
+    Route::get('/models/by-brands', [CarSpecificationController::class, 'getModelsByBrand']);
 
 
     # Cars api
     Route::get('/cars', [CarController::class, 'index']);
-    
+
     Route::get('/cars/{id}/get-id', [CarController::class, 'getCarById']);
     Route::get('/cars/{slug}/get-slug', [CarController::class, 'getCarBySlug']);
     Route::get('/cars/{id}/related', [CarController::class, 'getRelated']);
@@ -118,7 +124,7 @@ Route::prefix('')->group(function () {
 Route::get('/agency', [FrontendController::class, 'getAgencyContact']);
 Route::prefix('pages')->group(function () {
     Route::get('/menus', [FrontendController::class, 'getMenus']);
-    
+
     Route::get('/sliders', [FrontendController::class, 'getHomePageSliders']);
     Route::get('/contact-us', [FrontendController::class, 'getContactUs']);
     Route::get('/agency-contact', [FrontendController::class, 'getAgencyContact']);
@@ -142,7 +148,7 @@ Route::get('/car-gallery-items/{item}', [FrontendController::class, 'getMenuCarG
 # filters menu
 Route::get('/menu-filters', [FrontendController::class, 'getMenuFilters']);
 
-# customer ordering 
+# customer ordering
 // Route::apiResource('customer-orders', CustomerOrderController::class);
 
 Route::middleware('auth:api')->group(function () {
@@ -155,6 +161,20 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/customer-orders/by-phone/{phone}', [CustomerOrderController::class, 'showByPhone']);
     Route::put('/customer-orders/{customer_order}', [CustomerOrderController::class, 'update']);
     Route::delete('/customer-orders/{customer_order}', [CustomerOrderController::class, 'destroy']);
+
+
+
+    # client api for post items
+    Route::prefix('client/car')->group(function(){
+        Route::post('/create', [ClientCarController::class, 'createCar']);
+        Route::post('/{car}/update', [ClientCarController::class, 'updateCar']);
+
+        Route::get('/me', [ClientCarController::class, 'myCars']);
+
+        Route::get('/{car}/galleries', [ClientCarController::class, 'getGalleries']);
+        Route::post('/{car}/update-gallery', [ClientCarController::class, 'updateGallery']);
+        Route::post('/{carImage}/remove-gallery', [ClientCarController::class, 'removeGallery']);
+    });
 });
 Route::delete('/customer-orders/truncate/data', [CustomerOrderController::class, 'truncateOrders']);
 

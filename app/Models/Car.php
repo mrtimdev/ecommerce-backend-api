@@ -12,9 +12,9 @@ use OwenIt\Auditing\Contracts\Auditable;
 class Car extends EloquentModel implements Auditable
 {
     use HasFactory, \OwenIt\Auditing\Auditable;
-    
 
-    protected $fillable = ['sourced_link', 'listing_date' ,'code', 'name', 'slug', 'total_price', 'car_price', 'year', 'mileage', 'description', 'featured_image', 'is_featured', 'is_active', 'steering_id', 'engine_volume', 'size' ,'door', 'passenger_id', 'cylinder', 'water_flood_damaged', 'former_rental_car', 'former_taxi', 'recovered_theft', 'police_car', 'salvage_record', 'fuel_conversion', 'modified_seats', 'category_id', 'condition_id', 'brand_id', 'model_id', 'fuel_type_id', 'transmission_type_id', 'color_id', 'drive_type_id', 'location_id', 'status', 'youtube_link', 'towing_export_document', 'shipping', 'tax_import', 'clearance', 'service', 'first_payment', 'second_payment', 'third_payment', 'youtube_link', 'created_by', 'updated_by', 'view_count', 'like_count', 'featured_at'];
+
+    protected $fillable = ['sourced_link', 'listing_date' ,'code', 'name', 'slug', 'total_price', 'car_price', 'price', 'discount', 'client_id', 'type', 'year', 'mileage', 'description', 'featured_image', 'is_featured', 'is_active', 'steering_id', 'engine_volume', 'size' ,'door', 'passenger_id', 'cylinder', 'water_flood_damaged', 'former_rental_car', 'former_taxi', 'recovered_theft', 'police_car', 'salvage_record', 'fuel_conversion', 'modified_seats', 'category_id', 'condition_id', 'brand_id', 'model_id', 'fuel_type_id', 'transmission_type_id', 'color_id', 'drive_type_id', 'location_id', 'status', 'youtube_link', 'towing_export_document', 'shipping', 'tax_import', 'clearance', 'service', 'first_payment', 'second_payment', 'third_payment', 'youtube_link', 'created_by', 'updated_by', 'view_count', 'like_count', 'featured_at'];
     // ['plate_number', 'first_registered_date', 'engine_power', 'odometer_reading', ]
     protected $appends = ['featured_image_full_path'];
 
@@ -71,7 +71,7 @@ class Car extends EloquentModel implements Auditable
     {
         return $this->attributes['modified_seats'] ? true : false;
     }
-    
+
 
     public function images()
     {
@@ -182,6 +182,11 @@ class Car extends EloquentModel implements Auditable
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function client()
+    {
+        return $this->belongsTo(User::class, 'client_id', 'id')->where('type', 'frontend');
+    }
+
     public function getCarOptionsByGroup()
     {
         return $this->options()
@@ -229,7 +234,7 @@ class Car extends EloquentModel implements Auditable
     {
         return $this->hasMany(CarsLikeCount::class, 'car_id');
     }
-    
+
 
 
     public static function boot()
@@ -265,7 +270,7 @@ class Car extends EloquentModel implements Auditable
             'service' => 'Import Service Fee',
             'total_price' => 'Total Price',
         ];
-    
+
         return collect($payments)->filter(function ($title, $key) {
             return $this->{$key} !== null;
         })->map(function ($title, $key) {

@@ -151,3 +151,16 @@ if (!function_exists('sendOtpPhone')) {
         }
     }
 }
+
+
+if (!function_exists('apply_discount')) {
+    function apply_discount($price, $discountInput) {
+        if (str_ends_with($discountInput, '%')) {
+            $percentage = floatval(rtrim($discountInput, '%'));
+            return $price - ($price * $percentage / 100);
+        } else {
+            $amount = floatval($discountInput);
+            return $price - $amount;
+        }
+    }
+}

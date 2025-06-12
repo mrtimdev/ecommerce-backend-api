@@ -143,7 +143,7 @@ class ClientController extends Controller
         if($request->password) {
             $user->password = Hash::make($request->password);
         }
-        
+
         $user->update([
             'name' => "$request->first_name $request->last_name",
             'first_name' => $request->first_name,
@@ -215,6 +215,77 @@ class ClientController extends Controller
         //         'view_count',
         //     ]);
         $query->where('like_count', '>', 0);
+        return DataTables::of($query)
+        ->addIndexColumn()
+        ->addColumn('total_price', fn($row) => $row->total_price)
+        ->addColumn('category_name', fn($row) => $row->category->name ?? 'N/A')
+        ->addColumn('condition_name', fn($row) => $row->condition->name ?? 'N/A')
+        ->addColumn('brand_name', fn($row) => $row->brand->name ?? 'N/A')
+        ->addColumn('model_name', fn($row) => $row->model->name ?? 'N/A')
+        ->addColumn('fuel_type_name', fn($row) => $row->fuelType->name ?? 'N/A')
+        ->addColumn('image_path', fn($row) => $row->images[0]->image_path ?? null)
+        ->make(true);
+    }
+
+
+    public function clientCarsIndex(Request $request)
+    {
+        if(!auth()->user()->hasRole(['owner', 'admin']) && !auth()->user()->hasPermission('cars')) {
+            return inertia('Admin/Dashboard/Index', [
+                'is_access_denied' => true,
+                'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
+            ]);
+        }
+        return inertia()->render('Admin/Clients/Cars/Index');
+    }
+
+
+
+    // client's list cars
+    public function getCars(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Car::orderBy('id', 'desc')->get();
+            return response()->json([
+                'cars' => $data
+            ]);
+        }
+    }
+    public function getListCars(Request $request)
+    {
+        $query = Car::with(['category', 'condition', 'brand', 'model', 'fuelType', 'images', 'client'])
+            ->select([
+                'id',
+                'created_at',
+                'code',
+                'name',
+                'plate_number',
+                'car_price',
+                'total_price',
+                'price',
+                'discount',
+                'year',
+                'mileage',
+                'is_featured',
+                'featured_image',
+                'is_active',
+                'category_id',
+                'condition_id',
+                'brand_id',
+                'model_id',
+                'fuel_type_id',
+                'status',
+                'towing_export_document',
+                'shipping',
+                'tax_import',
+                'clearance',
+                'service',
+                'created_by',
+                'client_id',
+            ]);
+
+        $query->whereNotNull('client_id');
+        $query->where('type', 'client');
         return DataTables::of($query)
         ->addIndexColumn()
         ->addColumn('total_price', fn($row) => $row->total_price)

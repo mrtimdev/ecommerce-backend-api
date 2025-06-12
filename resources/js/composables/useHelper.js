@@ -28,10 +28,18 @@ export default function useHelper() {
     }
 
     const imageFormat = (src) => {
-        const image_path = src ? `/storage/${src}` : `/assets/images/no-image.jpg`
+
         return `
             <div class="image flex items-center justify-center">
                 <img src="${src}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
+            </div>
+        `
+    }
+     const imageFormat2 = (src) => {
+        const image_path = src ? `/storage/${src}` : `/assets/images/no-image.jpg`
+        return `
+            <div class="image flex items-center justify-center">
+                <img src="${image_path}" alt="Slider Image" class="w-10 h-10 object-cover rounded-lg" />
             </div>
         `
     }
@@ -94,25 +102,25 @@ export default function useHelper() {
             return amount.toFixed(decimals);
         }
     }
-    
 
-    const generateSlug = (value1 = '', value2 = '') => { 
+
+    const generateSlug = (value1 = '', value2 = '') => {
         const process = (value) => {
             return value
-              .toLowerCase() 
-              .replace(/[^a-z0-9]+/g, '-') 
-              .replace(/^-+|-+$/g, ''); 
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '');
         };
-    
+
         const v1 = process(value1);
         const v2 = process(value2);
-    
+
         const combined = `${v1}-${v2}`;
-    
+
         return combined
-            .toLowerCase() 
-            .replace(/[^a-z0-9]+/g, '-') 
-            .replace(/^-+|-+$/g, ''); 
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
     }
 
     const extractYouTubeVideoId = (url, is_full_url = false) => {
@@ -132,7 +140,7 @@ export default function useHelper() {
         }
         const shareRegex = /https?:\/\/(?:www\.)?web\.facebook\.com\/share\/v\/([^\/?&]+)/;
         const watchRegex = /https?:\/\/(?:www\.)?fb\.watch\/([^\/?&]+)/;
-        
+
         let match = url.match(shareRegex) || url.match(watchRegex);
         if(is_full_url) {
             return `<a class="text-blue-400" href="${url}" target="_blank">${(url ?? "")}</a>`
@@ -152,10 +160,11 @@ export default function useHelper() {
     const formatNumber = (number) => {
         return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(number);
     }
-      
-    
+
+
 
     return {
+        imageFormat2,
         statusFormat,
         imageFormat,
         generateSlug,
