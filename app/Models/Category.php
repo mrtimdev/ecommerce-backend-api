@@ -15,7 +15,7 @@ class Category extends Model
 
     protected $appends = ['status', 'image_full_path'];
 
-    
+
     public function getImageFullPathAttribute()
     {
         $image_path = $this->image_path;
@@ -24,8 +24,8 @@ class Category extends Model
     public function isActive(): Attribute
     {
         return Attribute::make(
-            get: fn (int $value) => (bool) $value, 
-            set: fn (bool $value) => $value ? 1 : 0 
+            get: fn (int $value) => (bool) $value,
+            set: fn (bool $value) => $value ? 1 : 0
         );
     }
     public function getStatusAttribute(): string
@@ -33,9 +33,9 @@ class Category extends Model
         return $this->is_active ? 'active' : 'inactive';
     }
 
-    public function cars()
+    public function products()
     {
-        return $this->hasMany(Car::class);
+        return $this->hasMany(Product::class);
     }
 
 

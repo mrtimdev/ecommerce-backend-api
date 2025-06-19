@@ -41,16 +41,16 @@ const menuGroups = ref([
             },
           ]
         : []),
-      ...(isRole("owner") || isRole("admin") || isPermission(["cars-specifications"])
+      ...(isRole("owner") || isRole("admin") || isPermission(["item-specifications"])
         ? [
             {
               icon: `<i class="mt-[5px] fi fi-ts-workflow-setting-alt"></i>`,
-              label: "Cars Specifications",
+              label: "Item Specifications",
               is_in_route: route().current("categories.*") ? true : false,
               children: [
                 ...(isRole("owner") ||
                 isRole("admin") ||
-                isPermission(["cars-categories"])
+                isPermission(["item-categories"])
                   ? [
                       {
                         icon: `<i class="fa-sharp fa-circle-dot"></i>`,
@@ -60,19 +60,7 @@ const menuGroups = ref([
                     ]
                   : []),
 
-                ...(isRole("owner") ||
-                isRole("admin") ||
-                isPermission(["cars-conditions"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "Conditions",
-                        routeName: "conditions.index",
-                      },
-                    ]
-                  : []),
-
-                ...(isRole("owner") || isRole("admin") || isPermission(["cars-brands"])
+                ...(isRole("owner") || isRole("admin") || isPermission(["brands"])
                   ? [
                       {
                         icon: `<i class="fa-sharp fa-circle-dot"></i>`,
@@ -81,7 +69,7 @@ const menuGroups = ref([
                       },
                     ]
                   : []),
-                ...(isRole("owner") || isRole("admin") || isPermission(["cars-models"])
+                ...(isRole("owner") || isRole("admin") || isPermission(["models"])
                   ? [
                       {
                         icon: `<i class="fa-sharp fa-circle-dot"></i>`,
@@ -90,52 +78,7 @@ const menuGroups = ref([
                       },
                     ]
                   : []),
-                ...(isRole("owner") ||
-                isRole("admin") ||
-                isPermission(["cars-fuel-types"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "Fuel Types",
-                        routeName: "fuelTypes.index",
-                      },
-                    ]
-                  : []),
-
-                ...(isRole("owner") ||
-                isRole("admin") ||
-                isPermission(["cars-transmission-types"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "Transmission Types",
-                        routeName: "transmissionTypes.index",
-                      },
-                    ]
-                  : []),
-
-                ...(isRole("owner") ||
-                isRole("admin") ||
-                isPermission(["cars-drive-types"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "Drive Types",
-                        routeName: "driveTypes.index",
-                      },
-                    ]
-                  : []),
-
-                ...(isRole("owner") || isRole("admin") || isPermission(["cars-steerings"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "Steerings",
-                        routeName: "steerings.index",
-                      },
-                    ]
-                  : []),
-                ...(isRole("owner") || isRole("admin") || isPermission(["cars-colors"])
+                ...(isRole("owner") || isRole("admin") || isPermission(["colors"])
                   ? [
                       {
                         icon: `<i class="fa-sharp fa-circle-dot"></i>`,
@@ -144,83 +87,25 @@ const menuGroups = ref([
                       },
                     ]
                   : []),
-
-                ...(isRole("owner") ||
-                isRole("admin") ||
-                isPermission(["cars-passengers"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "No. of Passengers",
-                        routeName: "passengers.index",
-                      },
-                    ]
-                  : []),
-
-                ...(isRole("owner") ||
-                isRole("admin") ||
-                isPermission(["cars-hot-marks", "cars-options"])
-                  ? [
-                      {
-                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
-                        label: "Other Options",
-                        routeName: isPermission(["cars-options"])
-                          ? "options.index"
-                          : "hotmarks.index",
-                      },
-                    ]
-                  : []),
               ],
-            },
-          ]
-        : []),
-
-      ...((isRole("owner") && isRole("admin")) || isPermission(["cars"])
-        ? [
-            {
-              icon: `<i class="mt-[5px] fi fi-tr-car-side"></i>`,
-              label: "Cars Listing",
-              routeName: "cars.index",
-              is_in_route: route().current("cars.*") ? true : false,
-            },
-          ]
-        : []),
-
-      ...((isRole("owner") && isRole("admin")) || isPermission(["cars-featured"])
-        ? [
-            {
-              icon: `<i class="mt-[5px] fi fi-tr-car-side"></i>`,
-              label: "Cars Featured",
-              routeName: "cars.featured",
-              is_in_route: route().current("cars.featured") ? true : false,
-            },
-          ]
-        : []),
-
-      ...(isRole("owner") || isRole("admin")
-        ? [
-            {
-              icon: `<i class="mt-[5px] fi fi-tr-car-side"></i>`,
-              label: "Client Cars Listing",
-              routeName: "client.cars.index",
-              is_in_route: route().current("cars.*") ? true : false,
-            },
-          ]
-        : []),
-
-      ...(isRole("owner") || isRole("admin") || isPermission(["frontends"])
-        ? [
-            {
-              icon: `<i class="mt-[5px] fi fi-ts-plan"></i>`,
-              label: "Frontend",
-              routeName: "frontend.page.sliders.index",
-              is_in_route: route().current("frontend.page.sliders.*") ? true : false,
             },
           ]
         : []),
 
       ...(isRole("owner")
         ? [
+            {
+              icon: `<i class="mt-[5px] fi fi-rr-user-gear"></i>`,
+              label: "Products",
+              routeName: "products.index",
+              is_in_route: route().current("products.*") ? true : false,
+            },
+            {
+              icon: `<i class="mt-[5px] fi fi-rr-user-gear"></i>`,
+              label: "Stocks",
+              routeName: "stocks.index",
+              is_in_route: route().current("stocks.*") ? true : false,
+            },
             {
               icon: `<i class="mt-[5px] fi fi-rr-user-gear"></i>`,
               label: "Users",
@@ -230,6 +115,12 @@ const menuGroups = ref([
             {
               icon: `<i class="mt-[5px] fi fi-rr-users-alt"></i>`,
               label: "Clients",
+              routeName: "clients.index",
+              is_in_route: route().current("clients.*") ? true : false,
+            },
+            {
+              icon: `<i class="mt-[5px] fi fi-rr-users"></i>`,
+              label: "Drivers",
               routeName: "clients.index",
               is_in_route: route().current("clients.*") ? true : false,
             },

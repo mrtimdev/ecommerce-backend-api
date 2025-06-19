@@ -37,7 +37,7 @@
               </li>
               <li class="me-2">
                 <Link
-                  :href="route('orders.index')"
+                  href="#"
                   :class="{
                     'text-purple-600 border-purple-600 dark:text-purple-500 dark:border-purple-500':
                       route().current('orders.index') ||
@@ -54,29 +54,7 @@
                     }"
                     class="mt-[5px] fi fi-rr-shopping-cart me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
                   ></i>
-                  {{ $t("orders") }}
-                </Link>
-              </li>
-              <li class="me-2">
-                <Link
-                  :href="route('clients.items.like')"
-                  :class="{
-                    'text-purple-600 border-purple-600 dark:text-purple-500 dark:border-purple-500': route().current(
-                      'clients.items.like'
-                    ),
-                  }"
-                  class="inline-flex items-center justify-center p-4 border-b-2 rounded-t-lg active group group-hover:text-gray-500 dark:group-hover:text-gray-300"
-                  aria-current="page"
-                >
-                  <i
-                    :class="{
-                      'text-purple-600 dark:text-purple-500': route().current(
-                        'clients.items.like'
-                      ),
-                    }"
-                    class="mt-[5px] fi fi-rr-heart me-2 text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300"
-                  ></i>
-                  {{ $t("likes") }}
+                  {{ $t("reports") }}
                 </Link>
               </li>
             </ul>

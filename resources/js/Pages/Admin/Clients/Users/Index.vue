@@ -232,31 +232,6 @@ onMounted(() => {
                         },
                         [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
                       ),
-                      h(
-                        "div",
-                        {
-                          class:
-                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: (e) => {
-                            router.get(route("orders.user.index", row.id));
-                          },
-                        },
-                        [
-                          h("i", { class: "fi fi-rr-shopping-cart mr-2" }),
-                          t("view_orders"),
-                        ]
-                      ),
-                      h(
-                        "div",
-                        {
-                          class:
-                            "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
-                          onClick: (e) => {
-                            router.get(route("clients.items.like", row.id));
-                          },
-                        },
-                        [h("i", { class: "fi fi-rr-heart mr-2" }), t("view_likes")]
-                      ),
                     ],
                   }
                 );

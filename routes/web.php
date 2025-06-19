@@ -7,14 +7,17 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\FrontendController;
 use App\Http\Controllers\Admin\CarController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\ModelController;
-use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\FuelTypeController;
@@ -25,6 +28,26 @@ use App\Http\Controllers\Admin\DriveTypeController;
 use App\Http\Controllers\Admin\PassengerController;
 use App\Http\Controllers\Admin\OtherOptionController;
 use App\Http\Controllers\Admin\TransmissionTypeController;
+use App\Http\Controllers\Admin\ClientController as AdminClientController;
+
+
+
+Route::middleware('auth')->prefix('admin')->group(function () {
+
+    Route::resource('products', ProductController::class);
+
+    // Additional custom routes if needed
+    Route::get('products/{product}/history', [ProductController::class, 'history'])
+        ->name('products.history');
+
+
+    Route::resource('stocks', StockController::class);
+    Route::resource('deliveries', DeliveryController::class);
+    Route::resource('clients', ClientController::class);
+
+    // Additional custom routes
+    Route::get('/clients/{client}/stocks', [ClientController::class, 'stocks'])->name('clients.stocks');
+});
 
 
 
@@ -39,8 +62,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 
 Route::middleware('auth')->prefix('client')->group(function () {
     Route::prefix('/cars')->group(function() {
-        Route::get('/', [ClientController::class, 'clientCarsIndex'])->name('client.cars.index');
-        Route::get('/list', [ClientController::class, 'getListCars'])->name('client.cars.list');
+        Route::get('/', [AdminClientController::class, 'clientCarsIndex'])->name('client.cars.index');
+        Route::get('/list', [AdminClientController::class, 'getListCars'])->name('client.cars.list');
     });
 });
 
