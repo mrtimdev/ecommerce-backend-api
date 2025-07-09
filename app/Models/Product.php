@@ -16,6 +16,15 @@ class Product extends Model
         'stock_alert',
         'is_active',
     ];
+    protected $casts = [
+        'price' => 'float', // or 'decimal:2' if you need specific precision
+    ];
+
+
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->attributes['is_active'] ? true : false;
+    }
 
     public function category()
     {
@@ -30,5 +39,10 @@ class Product extends Model
     public function stocks()
     {
         return $this->hasMany(Stock::class);
+    }
+
+    public function stockMoves()
+    {
+        return $this->hasMany(StockMove::class);
     }
 }

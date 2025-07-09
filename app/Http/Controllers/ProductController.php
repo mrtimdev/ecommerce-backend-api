@@ -15,7 +15,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with(['category', 'unit'])->paginate(10);
+        $products = Product::query()
+            ->with(['category', 'unit'])
+            ->withSum('stockMoves', 'quantity')
+            ->paginate(10);
 
         return Inertia::render('Products/Index', [
             'products' => $products,
@@ -52,6 +55,7 @@ class ProductController extends Controller
             'price' => 'nullable|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
+            'stock_alert' => 'nullable',
         ]);
 
         Product::create($validated);
@@ -97,6 +101,7 @@ class ProductController extends Controller
             'price' => 'nullable|numeric|min:0',
             'cost' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
+            'stock_alert' => 'nullable',
         ]);
 
         $product->update($validated);
@@ -127,5 +132,26 @@ class ProductController extends Controller
         return Inertia::render('Products/History', [
             'product' => $product->load(['category', 'unit']),
         ]);
+    }
+
+    public function ajaxProducts(Request $request)
+    {
+        $query = $request->input('query');
+
+        $products = Product::query()
+            ->when($query, function ($q) use ($query) {
+                $q->where('name', 'like', '%' . $query . '%')
+                  ->orWhere('code', 'like', '%' . $query . '%');
+            })
+            ->with(['unit', 'category']) // Assuming 'unit' is a relationship you want to eager load
+            ->limit(10) // Limit the number of results for performance
+            ->get();
+
+        // Ensure price is cast to float if not already handled by model casting
+        // $products->each(function ($product) {
+        //     $product->price = (float) $product->price;
+        // });
+
+        return response()->json($products);
     }
 }

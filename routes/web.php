@@ -35,6 +35,7 @@ use App\Http\Controllers\Admin\ClientController as AdminClientController;
 Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::resource('products', ProductController::class);
+    Route::get('/admin/products/ajax-products', [ProductController::class, 'ajaxProducts'])->name('admin.products.ajax-products');
 
     // Additional custom routes if needed
     Route::get('products/{product}/history', [ProductController::class, 'history'])

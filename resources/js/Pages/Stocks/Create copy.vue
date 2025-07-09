@@ -1,3 +1,122 @@
+<script setup>
+import { Head, Link, useForm } from "@inertiajs/vue3";
+import DefaultLayout from "@/Layouts/DefaultLayout.vue";
+import { ref, reactive, computed, watch } from "vue"; // Import 'watch'
+import { useI18n } from "vue-i18n";
+const { t } = useI18n();
+import { useMainStore } from "@/stores/main";
+
+const mainStore = useMainStore();
+const breadcrumbs = reactive([
+  { label: "Home", url: route("dashboard") },
+  { label: t("stocks"), url: route("stocks.index") },
+  { label: t("create"), url: null, is_active: true },
+]);
+
+const props = defineProps({
+  clients: Array,
+  // products: Array, // No longer directly passed, will be fetched via AJAX
+});
+
+const form = useForm({
+  client_id: "",
+  items: [],
+  payment_status: "unpaid",
+  date: new Date().toISOString().slice(0, 10),
+  note: "",
+});
+
+// Search functionality
+const searchQuery = ref("");
+const selectedProduct = ref(null);
+const quantity = ref(1);
+const searchResults = ref([]); // To store products fetched from AJAX
+const showSearchResults = ref(false); // Control visibility of search results
+
+// Watch for changes in searchQuery and fetch products
+let searchTimeout = null;
+watch(searchQuery, (newQuery) => {
+  if (newQuery.length > 2) {
+    // Start searching after 2 characters
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(fetchProducts, 300); // Debounce search
+  } else {
+    searchResults.value = [];
+    showSearchResults.value = false;
+  }
+});
+
+const fetchProducts = async () => {
+  try {
+    const response = await axios.get(route("admin.products.ajax-products"), {
+      params: { query: searchQuery.value },
+    });
+    searchResults.value = response.data;
+    showSearchResults.value = true;
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    searchResults.value = [];
+    showSearchResults.value = false;
+  }
+};
+
+const selectProduct = (product) => {
+  selectedProduct.value = product;
+  searchQuery.value = product.name; // Set search query to selected product name for display
+  showSearchResults.value = false; // Close search results
+  addProduct();
+};
+
+const addProduct = () => {
+  if (!selectedProduct.value || quantity.value < 1) return;
+
+  const existingIndex = form.items.findIndex(
+    (item) => item.product_id === selectedProduct.value.id
+  );
+
+  if (existingIndex >= 0) {
+    form.items[existingIndex].quantity =
+      parseFloat(form.items[existingIndex].quantity) + parseFloat(quantity.value);
+  } else {
+    form.items.push({
+      product_id: selectedProduct.value.id,
+      name: selectedProduct.value.name,
+      code: selectedProduct.value.code,
+      unit: selectedProduct.value.unit?.name,
+      price: parseFloat(selectedProduct.value.price) || 0, // Ensure price is a number
+      quantity: parseFloat(quantity.value), // Ensure quantity is a number
+    });
+  }
+
+  // Reset selection and close search
+  searchQuery.value = "";
+  selectedProduct.value = null;
+  quantity.value = 1;
+  searchResults.value = []; // Clear search results after adding
+  showSearchResults.value = false;
+};
+
+const removeItem = (index) => {
+  form.items.splice(index, 1);
+};
+
+const submit = () => {
+  form.post(route("stocks.store"), {
+    preserveScroll: true,
+    onSuccess: () => form.reset(),
+  });
+};
+
+// Computed totals
+const subtotal = computed(() => {
+  return form.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+});
+
+const grandTotal = computed(() => {
+  return subtotal.value;
+});
+</script>
+
 <template>
   <DefaultLayout>
     <Head title="Add Stock" />
@@ -50,12 +169,6 @@
                   class="form-input pr-10"
                   placeholder="Search or scan product..."
                   @focus="showSearchResults = true"
-                  @blur="
-                    () =>
-                      setTimeout(() => {
-                        if (!selectedProduct) showSearchResults = false;
-                      }, 100)
-                  "
                 />
                 <span class="absolute right-3 top-3 text-gray-400">
                   <i class="fi fi-rr-search"></i>
@@ -182,53 +295,17 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="form-label">Stock Type</label>
-                <select v-model="form.stock_type" class="form-select">
-                  <option value="">Select Type</option>
-                  <option value="purchase">Purchase</option>
-                  <option value="delivery">Delivery</option>
-                </select>
-                <InputError class="mt-1" :message="form.errors.stock_type" />
-              </div>
-
-              <div>
                 <label class="form-label">Payment Status</label>
                 <select v-model="form.payment_status" class="form-select">
                   <option value="unpaid">Unpaid</option>
                   <option value="paid">Paid</option>
                   <option value="partial">Partial Payment</option>
                 </select>
-                <InputError class="mt-1" :message="form.errors.payment_status" />
-              </div>
-
-              <div>
-                <label class="form-label">Initial Payment Amount</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  v-model.number="form.initial_payment_amount"
-                  class="form-input"
-                  placeholder="e.g., 200.00"
-                />
-                <InputError class="mt-1" :message="form.errors.initial_payment_amount" />
-              </div>
-
-              <div>
-                <label class="form-label">Payment Method (Initial)</label>
-                <input
-                  type="text"
-                  v-model="form.payment_method"
-                  class="form-input"
-                  placeholder="e.g., Cash, Bank Transfer"
-                />
-                <InputError class="mt-1" :message="form.errors.payment_method" />
               </div>
 
               <div>
                 <label class="form-label">Date</label>
                 <input type="date" v-model="form.date" class="form-input" />
-                <InputError class="mt-1" :message="form.errors.date" />
               </div>
 
               <div class="md:col-span-2">
@@ -239,7 +316,6 @@
                   rows="3"
                   placeholder="Additional information..."
                 ></textarea>
-                <InputError class="mt-1" :message="form.errors.note" />
               </div>
             </div>
 
@@ -270,142 +346,8 @@
   </DefaultLayout>
 </template>
 
-<script setup>
-import { Head, Link, useForm } from "@inertiajs/vue3";
-import DefaultLayout from "@/Layouts/DefaultLayout.vue";
-import { ref, reactive, computed, watch } from "vue";
-import { useI18n } from "vue-i18n";
-const { t } = useI18n();
-import { useMainStore } from "@/stores/main";
-import InputError from "@/Components/InputError.vue"; // Make sure you have this component if using it for errors
-import axios from "axios"; // Ensure axios is imported
-
-const mainStore = useMainStore();
-const breadcrumbs = reactive([
-  { label: "Home", url: route("dashboard") },
-  { label: t("stocks"), url: route("stocks.index") },
-  { label: t("create"), url: null, is_active: true },
-]);
-
-const props = defineProps({
-  clients: Array,
-});
-
-const form = useForm({
-  client_id: "",
-  items: [],
-  payment_status: "unpaid", // Initial value, will be set by backend based on payment
-  date: new Date().toISOString().slice(0, 10),
-  note: "",
-  stock_type: "", // New: 'purchase' or 'delivery'
-  initial_payment_amount: null, // New: for the first payment
-  payment_method: null, // New: method for initial payment
-});
-
-// Search functionality
-const searchQuery = ref("");
-const selectedProduct = ref(null);
-const quantity = ref(1);
-const searchResults = ref([]);
-const showSearchResults = ref(false);
-
-let searchTimeout = null;
-watch(searchQuery, (newQuery) => {
-  if (newQuery.length > 2) {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(fetchProducts, 300);
-  } else {
-    searchResults.value = [];
-    showSearchResults.value = false;
-  }
-});
-
-const fetchProducts = async () => {
-  try {
-    const response = await axios.get(route("admin.products.ajax-products"), {
-      params: { query: searchQuery.value },
-    });
-    searchResults.value = response.data;
-    showSearchResults.value = true;
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    searchResults.value = [];
-    showSearchResults.value = false;
-  }
-};
-
-const selectProduct = (product) => {
-  selectedProduct.value = product;
-  searchQuery.value = product.name;
-  showSearchResults.value = false;
-  addProduct();
-};
-
-const addProduct = () => {
-  if (!selectedProduct.value || quantity.value < 1) return;
-
-  const existingIndex = form.items.findIndex(
-    (item) => item.product_id === selectedProduct.value.id
-  );
-
-  if (existingIndex >= 0) {
-    form.items[existingIndex].quantity =
-      parseFloat(form.items[existingIndex].quantity) + parseFloat(quantity.value);
-  } else {
-    form.items.push({
-      product_id: selectedProduct.value.id,
-      name: selectedProduct.value.name,
-      code: selectedProduct.value.code,
-      unit: selectedProduct.value.unit?.name,
-      price: parseFloat(selectedProduct.value.price) || 0,
-      quantity: parseFloat(quantity.value),
-    });
-  }
-
-  searchQuery.value = "";
-  selectedProduct.value = null;
-  quantity.value = 1;
-  searchResults.value = [];
-  showSearchResults.value = false;
-};
-
-const removeItem = (index) => {
-  form.items.splice(index, 1);
-};
-
-const submit = () => {
-  form.post(route("stocks.store"), {
-    preserveScroll: true,
-    onSuccess: () => {
-      form.reset(
-        "client_id",
-        "items",
-        "note",
-        "initial_payment_amount",
-        "payment_method"
-      ); // Reset specific fields
-      form.date = new Date().toISOString().slice(0, 10); // Keep current date
-      form.payment_status = "unpaid"; // Reset to default
-      form.stock_type = ""; // Reset to default
-    },
-    onError: (errors) => {
-      console.error("Form submission errors:", errors);
-      // Inertia handles showing errors, but you can log them here for debugging
-    },
-  });
-};
-
-// Computed totals
-const subtotal = computed(() => {
-  return form.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-});
-
-const grandTotal = computed(() => {
-  return subtotal.value;
-});
-</script>
-
 <style scoped>
+/* Your existing styles remain here */
 .form-label {
   @apply block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300;
 }

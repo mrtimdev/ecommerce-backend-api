@@ -1,12 +1,10 @@
 <script setup>
 import { Head, Link, useForm } from "@inertiajs/vue3";
 import DefaultLayout from "@/Layouts/DefaultLayout.vue";
-import { ref, reactive, computed, watch } from "vue";
+import { reactive } from "vue";
 import { useI18n } from "vue-i18n";
 const { t } = useI18n();
-import { useMainStore } from "@/stores/main";
 
-const mainStore = useMainStore();
 const breadcrumbs = reactive([
   {
     label: "Home",
@@ -17,54 +15,48 @@ const breadcrumbs = reactive([
     url: route("products.index"),
   },
   {
-    label: t("create"),
+    label: t("edit"),
     url: null,
     is_active: true,
   },
 ]);
-defineProps({
+
+const props = defineProps({
+  product: Object,
   categories: Array,
   units: Array,
 });
 
 const form = useForm({
-  code: "",
-  name: "",
-  category_id: "",
-  unit_id: "",
-  price: "",
-  stock_alert: "",
-  description: "",
-  is_active: true,
+  code: props.product.code,
+  name: props.product.name,
+  description: props.product.description,
+  category_id: props.product.category_id,
+  unit_id: props.product.unit_id,
+  price: props.product.price,
+  stock_alert: props.product.stock_alert,
+  is_active: props.product.is_active,
 });
 
 const submit = () => {
-  form.post(route("products.store"));
+  form.put(route("products.update", props.product.id));
 };
 </script>
+
 <template>
   <DefaultLayout>
-    <Head title="Create Product" />
+    <Head :title="`Edit ${product.name}`" />
 
     <div
       class="content-header rounded-tl-md rounded-tr-md p-5 border-b bg-white dark:border-gray-700 dark:bg-boxdark-1 flex flex-grow items-center justify-between"
     >
       <Bc :crumbs="breadcrumbs" />
-      <div class="flex items-center gap-2 justify-center">
-        <button
-          v-if="mainStore.selectedRows.length"
-          @click="btnDeleteSelected"
-          class="text-white bg-rose-700 hover:bg-rose-800 focus:ring-1 focus:outline-none focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-purple-300"
-        >
-          <i class="fi fi-rr-trash w-4 h-4 me-2"></i>
-          {{ $t("delete") }}
-        </button>
-      </div>
     </div>
 
     <div class="content-body p-5">
       <div class="relative">
         <form @submit.prevent="submit" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Existing fields... -->
           <div>
             <label
               for="code"
@@ -80,6 +72,7 @@ const submit = () => {
             />
             <InputError class="mt-2" :message="form.errors.code" />
           </div>
+
           <div>
             <label
               for="name"
@@ -93,7 +86,9 @@ const submit = () => {
               class="form-input w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200 ease-in-out"
               placeholder="e.g., Wireless Mouse"
             />
+            <InputError class="mt-2" :message="form.errors.name" />
           </div>
+
           <div>
             <label
               for="category"
@@ -110,7 +105,9 @@ const submit = () => {
                 {{ c.name }}
               </option>
             </select>
+            <InputError class="mt-2" :message="form.errors.category_id" />
           </div>
+
           <div>
             <label
               for="unit"
@@ -125,7 +122,9 @@ const submit = () => {
               <option disabled value="">-- Select Unit --</option>
               <option v-for="u in units" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
+            <InputError class="mt-2" :message="form.errors.unit_id" />
           </div>
+
           <div>
             <label
               for="price"
@@ -140,7 +139,9 @@ const submit = () => {
               class="form-input w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200 ease-in-out"
               placeholder="0.00"
             />
+            <InputError class="mt-2" :message="form.errors.price" />
           </div>
+
           <div>
             <label
               for="stock_alert"
@@ -154,20 +155,9 @@ const submit = () => {
               class="form-input w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent dark:bg-gray-700 dark:text-white transition duration-200 ease-in-out"
               placeholder="e.g., 10"
             />
+            <InputError class="mt-2" :message="form.errors.stock_alert" />
           </div>
-          <div class="col-span-full flex items-center gap-3 mt-2">
-            <input
-              id="is_active"
-              v-model="form.is_active"
-              type="checkbox"
-              class="h-5 w-5 text-purple-600 dark:text-purple-500 rounded border-gray-300 dark:border-gray-600 focus:ring-purple-500 transition duration-200 ease-in-out"
-            />
-            <label
-              for="is_active"
-              class="text-base font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
-              >Product is Active</label
-            >
-          </div>
+
           <!-- New Description Field -->
           <div class="md:col-span-2">
             <label
@@ -184,13 +174,34 @@ const submit = () => {
             ></textarea>
             <InputError class="mt-2" :message="form.errors.description" />
           </div>
-          <div class="col-span-full flex justify-end mt-4">
+
+          <div class="col-span-full flex items-center gap-3 mt-2">
+            <input
+              id="is_active"
+              v-model="form.is_active"
+              type="checkbox"
+              class="h-5 w-5 text-purple-600 dark:text-purple-500 rounded border-gray-300 dark:border-gray-600 focus:ring-purple-500 transition duration-200 ease-in-out"
+            />
+            <label
+              for="is_active"
+              class="text-base font-medium text-gray-700 dark:text-gray-300 cursor-pointer"
+              >Product is Active</label
+            >
+          </div>
+
+          <div class="col-span-full flex justify-end gap-4 mt-4">
+            <Link
+              :href="route('products.index')"
+              class="bg-gray-200 text-gray-800 px-8 py-3 rounded-xl hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white focus:outline-none focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-700 font-bold text-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5"
+            >
+              Cancel
+            </Link>
             <button
               type="submit"
               class="bg-purple-600 text-white px-8 py-3 rounded-xl hover:bg-purple-700 dark:hover:bg-purple-500 focus:outline-none focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-700 font-bold text-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5"
               :disabled="form.processing"
             >
-              {{ form.processing ? "Saving..." : "Save Product" }}
+              {{ form.processing ? "Updating..." : "Update Product" }}
             </button>
           </div>
         </form>

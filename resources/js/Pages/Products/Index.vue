@@ -103,6 +103,11 @@ onBeforeUnmount(() => mainStore.clearSelectedRows());
                         <th
                           class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
+                          Quantity
+                        </th>
+                        <th
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
                           Status
                         </th>
                         <th
@@ -124,6 +129,9 @@ onBeforeUnmount(() => mainStore.clearSelectedRows());
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ product.price }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                          {{ product.stock_moves_sum_quantity ?? 0 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                           <span
                             :class="
                               product.is_active
@@ -137,12 +145,12 @@ onBeforeUnmount(() => mainStore.clearSelectedRows());
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <Link
-                            :href="`/products/${product.id}/edit`"
+                            :href="route('products.destroy', product.id)"
                             class="text-indigo-600 hover:text-indigo-900 mr-3"
                             >Edit</Link
                           >
                           <Link
-                            :href="`/products/${product.id}`"
+                            :href="route('products.destroy', product.id)"
                             method="delete"
                             as="button"
                             class="text-red-600 hover:text-red-900"
