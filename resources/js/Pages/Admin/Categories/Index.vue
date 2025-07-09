@@ -41,7 +41,6 @@
                 <th class="w-[5%]">{{ $t("image") }}</th>
                 <th class="w-[10%]">{{ $t("code") }}</th>
                 <th class="w-[25%]">{{ $t("name") }}</th>
-                <th class="w-[35%]">{{ $t("slug") }}</th>
                 <th class="w-[10%]">{{ $t("status") }}</th>
                 <th class="w-[10%] action-col">{{ $t("actions") }}</th>
               </tr>
@@ -70,11 +69,10 @@ import { nextTick, watch } from "vue";
 import useHelper from "@/composables/useHelper";
 const { statusFormat, imageFormat } = useHelper();
 
-
 import { useMainStore } from "@/stores/main";
 import { useCategory } from "@/stores/category";
 
-import { events } from "@/events"
+import { events } from "@/events";
 
 const mainStore = useMainStore();
 const categoryStore = useCategory();
@@ -144,7 +142,6 @@ onMounted(() => {
       },
       { data: "code", name: "code" },
       { data: "name", name: "name" },
-      { data: "slug", name: "slug" },
       {
         data: "is_active",
         className: "action-col",
@@ -191,7 +188,7 @@ onMounted(() => {
                             "cursor-pointer border-t border-stroke dark:border-gray-200 inline-flex justify-start items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 w-full text-left --hover:bg-gray-200",
                           onClick: (e) => {
                             e.preventDefault();
-                            events.emit('confirm:open', [row.id]);
+                            events.emit("confirm:open", [row.id]);
                           },
                         },
                         [h("i", { class: "fa fa-trash mr-2" }), t("delete")]
@@ -209,27 +206,24 @@ onMounted(() => {
       },
     ],
   });
-  
 });
 
-
 const btnDeleteSelected = () => {
-  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : []
-  events.emit('confirm:open', items);
+  const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : [];
+  events.emit("confirm:open", items);
 };
 
-events.on('confirm:confirmed', (data) => {
+events.on("confirm:confirmed", (data) => {
   const items = mainStore.selectedRows.length > 0 ? mainStore.selectedRows : data;
   categoryStore.deleteCategories(items);
-})
+});
 
-events.on('confirm:success', () => {
+events.on("confirm:success", () => {
   tableData.value.ajax.reload();
   mainStore.clearSelectedRows();
-})
+});
 
 onBeforeUnmount(() => mainStore.clearSelectedRows());
-
 </script>
 
 <style lang="scss">

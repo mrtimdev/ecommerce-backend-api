@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Category extends Model
 {
     use HasFactory;
-    protected $fillable = ['code', 'name', 'slug', 'image_path' ,'is_active'];
+    protected $fillable = ['code', 'name', 'image_path' ,'is_active'];
     public $timestamps = false;
 
 
@@ -30,7 +30,7 @@ class Category extends Model
     }
     public function getStatusAttribute(): string
     {
-        return $this->is_active ? 'active' : 'inactive';
+        return $this->is_active == 1 ? 'active' : 'inactive';
     }
 
     public function products()
