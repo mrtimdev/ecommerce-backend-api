@@ -18,3 +18,15 @@ git pull origin Tim-delivery-system
 git stash
 git pull origin Tim-delivery-system
 git stash pop
+
+
+sudo nano /etc/apache2/sites-available/kcy.conf
+
+sudo nano /etc/apache2/ports.conf
+
+sudo a2ensite kcy.conf
+sudo systemctl reload apache2
+
+
+tail -f /var/www/php-project/kcy-logistic/source/storage/logs/laravel.log
+

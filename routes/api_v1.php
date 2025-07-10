@@ -86,6 +86,8 @@ Route::prefix('')->group(function () {
     Route::get('/categories/{category}/get-id', [CategoryController::class, 'getCategoryById']);
     Route::get('/categories/{slug}/get-slug', [CategoryController::class, 'getCategoryBySlug']);
 
+    Route::apiResource('categories', CategoryController::class);
+
     Route::get('/brands', [BrandController::class, 'index']);
     Route::get('/brands/{brand}/get-id', [BrandController::class, 'getBrandById']);
     Route::get('/brands/{slug}/get-slug', [BrandController::class, 'getBrandBySlug']);

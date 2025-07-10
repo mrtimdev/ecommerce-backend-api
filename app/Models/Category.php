@@ -24,13 +24,13 @@ class Category extends Model
     public function isActive(): Attribute
     {
         return Attribute::make(
-            get: fn (int $value) => (bool) $value,
+            get: fn (?int $value) => (bool) $value,
             set: fn (bool $value) => $value ? 1 : 0
         );
     }
     public function getStatusAttribute(): string
     {
-        return $this->is_active == 1 ? 'active' : 'inactive';
+        return $this->isActive == 1 ? 'active' : 'inactive';
     }
 
     public function products()

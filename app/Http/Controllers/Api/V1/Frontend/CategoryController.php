@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1\Frontend;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CategoryRequest;
+use App\Http\Requests\CategoryUpdateRequest;
 use App\Http\Resources\Frontend\CategoryResource;
 use App\Http\Resources\Frontend\CategoryCollection;
 
@@ -42,6 +44,65 @@ class CategoryController extends Controller
     {
         $category = Category::where('slug', $slug)->first();
         return new CategoryResource($category);
+    }
+
+
+
+
+    public function store(CategoryRequest $request)
+    {
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            $data['image_path'] = $request->file('image')->store('categories', 'public');
+        }
+
+        $category = Category::create($data);
+
+        return response()->json([
+            'message' => 'Category created successfully',
+            'category' => $category,
+        ], 201);
+    }
+
+    public function show(Category $category)
+    {
+        return response()->json($category);
+    }
+
+    public function update(CategoryUpdateRequest $request, Category $category)
+    {
+        $data = $request->validated();
+
+        if ($request->hasFile('image')) {
+            // Delete old image
+            if ($category->image_path && Storage::disk('public')->exists($category->image_path)) {
+                Storage::disk('public')->delete($category->image_path);
+            }
+
+            $data['image_path'] = $request->file('image')->store('categories', 'public');
+        }
+
+        $category->update($data);
+
+        return response()->json([
+            'message' => 'Category updated successfully',
+            'category' => $category,
+        ]);
+    }
+
+    public function destroy(Category $category)
+    {
+        // Optional: delete image file
+        if ($category->image_path && Storage::disk('public')->exists($category->image_path)) {
+            Storage::disk('public')->delete($category->image_path);
+        }
+
+        $category->delete();
+
+        return response()->json([
+            'message' => 'Category deleted successfully',
+        ]);
     }
 
 }

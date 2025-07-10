@@ -39,8 +39,8 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required|string|max:100|unique:categories,code|regex:/^[^\s]+$/|max:100', 
-            'name' => 'required|string|max:191|unique:categories,name', 
+            'code' => 'required|string|max:100|unique:categories,code|regex:/^[^\s]+$/|max:100',
+            'name' => 'required|string|max:191|unique:categories,name',
             'slug' => [
                 'required',
                 'string',
@@ -85,7 +85,7 @@ class CategoryController extends Controller
         return Inertia::render('Admin/Categories/Edit', ['category' => $Category]);
     }
 
-    public function update(Request $request, Category $category)
+    public function update(CategoryUpdateRequest $request, Category $category)
     {
        $request->validate([
             'code' => [
@@ -93,20 +93,20 @@ class CategoryController extends Controller
                 'string',
                 'max:100',
                 'regex:/^[^\s]+$/',
-                Rule::unique('categories', 'code')->ignore($category->id), 
+                Rule::unique('categories', 'code')->ignore($category->id),
             ],
             'name' => [
                 'required',
                 'string',
                 'max:191',
-                Rule::unique('categories', 'name')->ignore($category->id), 
+                Rule::unique('categories', 'name')->ignore($category->id),
             ],
             'slug' => [
                 'required',
                 'string',
                 'max:191',
                 'regex:/^[a-zA-Z0-9-_]+$/',
-                Rule::unique('categories', 'slug')->ignore($category->id), 
+                Rule::unique('categories', 'slug')->ignore($category->id),
             ],
             'image_path' => 'nullable|image|mimes:jpg,jpeg,png|max:1024',
             'is_active' => ['required', 'boolean']
@@ -147,7 +147,7 @@ class CategoryController extends Controller
                 Storage::disk('public')->delete($category->image_path);
             }
         }
-        Category::whereIn('id', $ids)->delete();  
+        Category::whereIn('id', $ids)->delete();
         return redirect()->route('categories.index');
     }
     public function getCategories(Request $request)

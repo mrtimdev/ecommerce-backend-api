@@ -95,14 +95,25 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::post('cars/featured/store', [CarController::class, 'addCarFeatured'])->name('cars.featured.store');
     Route::post('cars/featured/remove', [CarController::class, 'removeCarFeatured'])->name('cars.featured.remove');
 
-    Route::get('/categories/all', [CategoryController::class, 'getCategories'])->name('categories.list');
-    Route::post('/categories/delete-selected', [CategoryController::class, 'deleteSelected'])->name('categories.destroy.selected');
-    Route::get('categories/create', [CategoryController::class, 'create'])->name('categories.create');
-    Route::post('categories/store', [CategoryController::class, 'store'])->name('categories.store');
-    Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
-    Route::delete('categories/{category}/delete', [CategoryController::class, 'destroy'])->name('categories.destroy');
-    Route::get('categories/{category}/edit', [CategoryController::class, 'edit'])->name('categories.edit');
-    Route::post('categories/{category}/update', [CategoryController::class, 'update'])->name('categories.update');
+
+
+    Route::prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            Route::prefix('categories')
+                ->name('admin.categories.')
+                ->group(function () {
+                    Route::get('/', [CategoryController::class, 'index'])->name('index');
+                    Route::get('/all', [CategoryController::class, 'getCategories'])->name('list');
+                    Route::get('/create', [CategoryController::class, 'create'])->name('create');
+                    Route::post('/store', [CategoryController::class, 'store'])->name('store');
+                    Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('edit');
+                    // Route::post('/{category}/update', [CategoryController::class, 'update'])->name('update');
+                    Route::delete('/{category}/delete', [CategoryController::class, 'destroy'])->name('destroy');
+                    Route::post('/delete-selected', [CategoryController::class, 'deleteSelected'])->name('destroy.selected');
+                });
+        });
+
 
 
     Route::get('/conditions/all', [ConditionController::class, 'getConditions'])->name('conditions.list');
