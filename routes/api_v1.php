@@ -9,8 +9,10 @@ use App\Http\Controllers\Api\V1\Frontend\UserController;
 use App\Http\Controllers\Api\V1\Frontend\BrandController;
 use App\Http\Controllers\Api\V1\Frontend\ColorController;
 use App\Http\Controllers\Api\V1\Frontend\ModelController;
+use App\Http\Controllers\Api\V1\Frontend\ProductController;
 use App\Http\Controllers\Api\V1\Frontend\SettingController;
 use App\Http\Controllers\Api\V1\Frontend\CategoryController;
+use App\Http\Controllers\Api\V1\Frontend\CustomerController;
 use App\Http\Controllers\Api\V1\Frontend\FrontendController;
 use App\Http\Controllers\Api\V1\Frontend\FuelTypeController;
 use App\Http\Controllers\Api\V1\Frontend\ClientCarController;
@@ -99,7 +101,12 @@ Route::prefix('units')
         Route::delete('/{unit}/delete', [UnitController::class, 'destroy']);
 
 });
-    // Route::apiResource('categories', UnitController::class)->
+
+Route::apiResource('customers', CustomerController::class);
+
+Route::middleware(['auth:api'])->group(function () {
+    Route::apiResource('products', ProductController::class);
+});
 
 Route::prefix('')->group(function () {
     Route::get('/categories', [UnitController::class, 'index']);

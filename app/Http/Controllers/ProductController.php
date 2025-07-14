@@ -10,9 +10,11 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct()
+    {
+        // ensure every method requires a valid Sanctum token
+        $this->middleware('auth:sanctum');
+    }
     public function index()
     {
         $products = Product::query()

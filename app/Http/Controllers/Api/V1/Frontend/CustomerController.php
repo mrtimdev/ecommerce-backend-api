@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api\V1\Frontend;
 
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\CustomerResource;
 
 class CustomerController extends Controller
@@ -19,7 +21,7 @@ class CustomerController extends Controller
             'client_id' => 'required|exists:users,id',
             'name'      => 'required|string|max:255',
             'email'     => 'required|email|unique:customers,email',
-            'phone'     => 'nullable|string|max:20',
+            'phone'     => 'nullable|string|max:20|unique:customers,phone',
             'address'   => 'nullable|string',
         ]);
 
@@ -38,10 +40,20 @@ class CustomerController extends Controller
         $validated = $request->validate([
             'client_id' => 'sometimes|exists:users,id',
             'name'      => 'sometimes|string|max:255',
-            'email'     => ['sometimes', 'email', Rule::unique('customers')->ignore($customer->id)],
-            'phone'     => 'nullable|string|max:20',
-            'address'   => 'nullable|string',
+            'email'     => [
+                'sometimes',
+                'email',
+                Rule::unique('customers', 'email')->ignore($customer->id),
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('customers', 'phone')->ignore($customer->id),
+            ],
+            'address'   => 'nullable|string|max:500',
         ]);
+
 
         $customer->update($validated);
 
@@ -51,6 +63,6 @@ class CustomerController extends Controller
     public function destroy(Customer $customer)
     {
         $customer->delete();
-        return response()->json(['message' => 'Customer deleted']);
+        return response()->json(['success' => true, 'message' => 'Customer deleted']);
     }
 }

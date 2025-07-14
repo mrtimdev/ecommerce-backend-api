@@ -13,8 +13,10 @@ class Product extends Model
         'category_id',
         'unit_id',
         'description',
+        'quantity',
         'stock_alert',
         'is_active',
+        'client_id',
     ];
     protected $casts = [
         'price' => 'float', // or 'decimal:2' if you need specific precision
@@ -44,5 +46,9 @@ class Product extends Model
     public function stockMoves()
     {
         return $this->hasMany(StockMove::class);
+    }
+     public function client()
+    {
+        return $this->belongsTo(User::class, 'client_id');
     }
 }
