@@ -85,7 +85,7 @@ class CategoryController extends Controller
         return Inertia::render('Admin/Categories/Edit', ['category' => $Category]);
     }
 
-    public function update(CategoryUpdateRequest $request, Category $category)
+    public function update(Request $request, Category $category)
     {
        $request->validate([
             'code' => [

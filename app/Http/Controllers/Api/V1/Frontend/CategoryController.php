@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1\Frontend;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CategoryRequest;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\CategoryUpdateRequest;
 use App\Http\Resources\Frontend\CategoryResource;
 use App\Http\Resources\Frontend\CategoryCollection;
@@ -67,7 +69,7 @@ class CategoryController extends Controller
 
     public function show(Category $category)
     {
-        return response()->json($category);
+        return new CategoryResource($category);
     }
 
     public function update(CategoryUpdateRequest $request, Category $category)
@@ -75,7 +77,6 @@ class CategoryController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            // Delete old image
             if ($category->image_path && Storage::disk('public')->exists($category->image_path)) {
                 Storage::disk('public')->delete($category->image_path);
             }

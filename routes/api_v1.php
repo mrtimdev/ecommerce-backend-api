@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Api\V1\Frontend\CarController;
+use App\Http\Controllers\Api\V1\Frontend\UnitController;
 use App\Http\Controllers\Api\V1\Frontend\UserController;
 use App\Http\Controllers\Api\V1\Frontend\BrandController;
 use App\Http\Controllers\Api\V1\Frontend\ColorController;
@@ -80,13 +81,33 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 # frontend routes
+Route::prefix('categories')
+    ->group(function () {
+        Route::get('', [CategoryController::class, 'index']);
+        Route::post('/store', [CategoryController::class, 'store']);
+        Route::get('/{category}/show', [CategoryController::class, 'show']);
+        Route::post('/{category}/update', [CategoryController::class, 'update']);
+        Route::delete('/{category}/delete', [CategoryController::class, 'destroy']);
+
+});
+Route::prefix('units')
+    ->group(function () {
+        Route::get('', [UnitController::class, 'index']);
+        Route::post('/store', [UnitController::class, 'store']);
+        Route::get('/{unit}/show', [UnitController::class, 'show']);
+        Route::post('/{unit}/update', [UnitController::class, 'update']);
+        Route::delete('/{unit}/delete', [UnitController::class, 'destroy']);
+
+});
+    // Route::apiResource('categories', UnitController::class)->
 
 Route::prefix('')->group(function () {
-    Route::get('/categories', [CategoryController::class, 'index']);
-    Route::get('/categories/{category}/get-id', [CategoryController::class, 'getCategoryById']);
+    Route::get('/categories', [UnitController::class, 'index']);
+    Route::get('/categories/{category}', [CategoryController::class, 'getCategoryById']);
     Route::get('/categories/{slug}/get-slug', [CategoryController::class, 'getCategoryBySlug']);
 
-    Route::apiResource('categories', CategoryController::class);
+
+
 
     Route::get('/brands', [BrandController::class, 'index']);
     Route::get('/brands/{brand}/get-id', [BrandController::class, 'getBrandById']);
