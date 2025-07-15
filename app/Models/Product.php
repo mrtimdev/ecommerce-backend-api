@@ -51,4 +51,14 @@ class Product extends Model
     {
         return $this->belongsTo(User::class, 'client_id');
     }
+
+    public function images()
+    {
+        return $this->hasMany(ProductGallery::class);
+    }
+    public function gallery()
+    {
+        return $this->hasMany(ProductGallery::class);
+    }
 }
+

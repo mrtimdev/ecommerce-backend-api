@@ -41,30 +41,35 @@ class ProductController extends Controller
             'is_active'   => 'boolean',
         ]);
 
+
+
         // merge in client_id from the authenticated user
-        $validated['client_id'] = Auth::id();
+        $validated['client_id'] = $user->id;
 
         $product = Product::create($validated);
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $image) {
+                $galleryPath = $image->store('client/products/gallery', 'public');
+                $product->images()->create(['image_path' => $galleryPath]);
+            }
+        }
 
         return response()->json($product, 201);
     }
 
     public function show(Product $product)
     {
-        // ensure they can only view their own product:
-        $this->authorizeResource($product);
         return $product->load(['category', 'unit']);
     }
 
     public function update(Request $request, Product $product)
     {
-        $this->authorizeResource($product);
-
+        $user = Auth::guard('api')->user();
         $validated = $request->validate([
             'code' => [
                 'sometimes', 'string',
                 Rule::unique('products')->ignore($product->id)
-                    ->where(fn($q) => $q->where('client_id', Auth::id())),
+                    ->where(fn($q) => $q->where('client_id', $user->id)),
             ],
             'name'        => 'sometimes|string|max:255',
             'price'       => 'sometimes|numeric|min:0',
@@ -78,12 +83,18 @@ class ProductController extends Controller
 
         $product->update($validated);
 
+        if ($request->hasFile('gallery_images')) {
+            foreach ($request->file('gallery_images') as $image) {
+                $galleryPath = $image->store('client/gallery', 'public');
+                $product->images()->create(['image_path' => $galleryPath]);
+            }
+        }
+
         return response()->json($product);
     }
 
     public function destroy(Product $product)
     {
-        $this->authorizeResource($product);
 
         $product->delete();
 

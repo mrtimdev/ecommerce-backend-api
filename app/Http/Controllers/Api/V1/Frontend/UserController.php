@@ -33,39 +33,31 @@ class UserController extends Controller
                 'email',
                 Rule::unique('users', 'email')->where('type', 'client'),
             ],
-            // 'username' => [
-            //     'required',
-            //     'string',
-            //     'max:100',
-            //     Rule::unique('users', 'username')->where('type', 'client'),
-            //     'regex:/^[a-z0-9_]+$/'
-            // ],
+
             'phone' => 'required|string|max:20',
             'terms' => 'required|boolean',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:4|confirmed',
         ], [
             'full_name.required' => 'Full name is required.',
             'email.required' => 'Email is required.',
             'email.email' => 'Email must be a valid email address.',
             'email.unique' => 'This email is already taken.',
-            'username.required' => 'Username is required.',
-            'username.string' => 'Username must be a string.',
-            'username.max' => 'Username may not be greater than 100 characters.',
-            'username.unique' => 'Username has already been taken.',
-            'username.regex' => 'Username must only contain lowercase letters, numbers, and underscores.',
             'phone.required' => 'Phone number is required.',
             'terms.required' => 'You must agree to the terms.',
             'password.required' => 'Password is required.',
-            'password.min' => 'Password must be at least 8 characters.',
+            'password.min' => 'Password must be at least 4 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);
 
+        $names = explode(' ', $request->full_name, 2);
+        $firstName = $names[0];
+        $lastName = $names[1] ?? '';
+
         $user = User::create([
             'name' => "$request->full_name",
-            // 'first_name' => $request->first_name,
-            // 'last_name' => $request->last_name,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'email' => $request->email,
-            // 'username' => $request->username,
             'phone' => $request->phone,
             'type' => "client",
             'terms' => $request->terms,
