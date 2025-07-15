@@ -24,29 +24,27 @@ class UserController extends Controller
     public function register(Request $request)
     {
         User::whereNull('email_verified_at')
-            ->where('type', 'frontend')
+            ->where('type', 'client')
             ->delete();
         $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
+            'full_name' => 'required|string|max:20',
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email')->where('type', 'frontend'),
+                Rule::unique('users', 'email')->where('type', 'client'),
             ],
-            'username' => [
-                'required',
-                'string',
-                'max:100',
-                Rule::unique('users', 'username')->where('type', 'frontend'),
-                'regex:/^[a-z0-9_]+$/'
-            ],
+            // 'username' => [
+            //     'required',
+            //     'string',
+            //     'max:100',
+            //     Rule::unique('users', 'username')->where('type', 'client'),
+            //     'regex:/^[a-z0-9_]+$/'
+            // ],
             'phone' => 'required|string|max:20',
             'terms' => 'required|boolean',
             'password' => 'required|string|min:8|confirmed',
         ], [
-            'first_name.required' => 'First name is required.',
-            'last_name.required' => 'Last name is required.',
+            'full_name.required' => 'Full name is required.',
             'email.required' => 'Email is required.',
             'email.email' => 'Email must be a valid email address.',
             'email.unique' => 'This email is already taken.',
@@ -61,15 +59,15 @@ class UserController extends Controller
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
         ]);
-        
+
         $user = User::create([
-            'name' => "$request->first_name $request->last_name",
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
+            'name' => "$request->full_name",
+            // 'first_name' => $request->first_name,
+            // 'last_name' => $request->last_name,
             'email' => $request->email,
-            'username' => $request->username,
+            // 'username' => $request->username,
             'phone' => $request->phone,
-            'type' => "frontend",
+            'type' => "client",
             'terms' => $request->terms,
             'password' => Hash::make($request->password),
             'is_new_email' => false,
@@ -89,7 +87,7 @@ class UserController extends Controller
         $expiresAt1Day = Carbon::now()->addDays(7);
         $expiresAt = $request->remember ? null : $expiresAt1Day;
         return response()->json([
-            'status' => 'success',  
+            'status' => 'success',
             'access_token' => $request->user()->createToken($device, expiresAt: $expiresAt)->plainTextToken,
         ], 200);
     }
@@ -123,7 +121,7 @@ class UserController extends Controller
     public function updateAvatar(
         UserUpdateAvatarRequest $request
     ): JsonResponse {
-        
+
         $user = Auth::guard('api')->user();
         if ($request->hasFile('avatar')) {
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
@@ -131,7 +129,7 @@ class UserController extends Controller
             }
             $user->avatar = $request->file('avatar')->store('users', 'public');
         }
-        
+
         $user->update([]);
         $successMessage = [
             'status'    => 'success',
@@ -172,7 +170,7 @@ class UserController extends Controller
             }
             $user->cover = $request->file('cover')->store('users', 'public');
         }
-        
+
         $user->update([]);
         $successMessage = [
             'status'    => 'success',
@@ -209,7 +207,7 @@ class UserController extends Controller
         $request->validate([
             'email' => 'required|email|unique:users,email,'.$user->id,
         ]);
-        
+
         $user->update([
             'email_verified_at' => null,
             'new_email' => $request->email,
@@ -241,7 +239,7 @@ class UserController extends Controller
             'username.unique' => 'Username has already been taken.',
             'username.regex' => 'Username must only contain lowercase letters, numbers, and underscores.',
         ]);
-        
+
         $user->update([
             'username' => $request->username,
         ]);
@@ -258,7 +256,7 @@ class UserController extends Controller
         $user = Auth::guard('api')->user();
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',  
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email_2,'.$user->id,
             'phone' => 'required|string|max:20',
             'dob' => 'sometimes|required|date',
@@ -269,34 +267,34 @@ class UserController extends Controller
             'first_name.required' => 'First name is required.',
             'first_name.string' => 'First name must be a string.',
             'first_name.max' => 'First name may not be greater than 255 characters.',
-            
+
             'last_name.required' => 'Last name is required.',
             'last_name.string' => 'Last name must be a string.',
             'last_name.max' => 'Last name may not be greater than 255 characters.',
-            
+
             'email.required' => 'Email is required.',
             'email.email' => 'Email must be a valid email address.',
             'email.unique' => 'Email has already been taken.',
-            
+
             'phone.required' => 'Phone number is required.',
             'phone.string' => 'Phone number must be a string.',
             'phone.max' => 'Phone number may not be greater than 20 characters.',
-            
+
             'dob.required' => 'Date of birth is required.',
             'dob.date' => 'Date of birth must be a valid date.',
-            
+
             'gender.required' => 'Gender is required.',
             'gender.in' => 'Gender must be one of the following: male, female, or other.',
-            
+
             'company.required' => 'Company name is required.',
             'company.string' => 'Company name must be a string.',
             'company.max' => 'Company name may not be greater than 255 characters.',
-            
+
             'address.required' => 'Address is required.',
             'address.string' => 'Address must be a string.',
             'address.max' => 'Address may not be greater than 255 characters.',
         ]);
-        
+
         $user->update([
             'name' => "{$request->first_name} {$request->last_name}",
             'first_name' => $request->first_name,
@@ -326,7 +324,7 @@ class UserController extends Controller
             'message' => 'Your information successfully updated.',
         ]);
     }
-    
+
 
     public function resetPassword(Request $request)
     {
@@ -375,7 +373,7 @@ class UserController extends Controller
                 'user' => $user->name,
             ], 200);
         }
-        
+
         return response()->json([
             'status' => 'fail',
             'message' => 'We can not access to your account.',
