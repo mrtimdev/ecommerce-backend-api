@@ -330,7 +330,7 @@ class UserController extends Controller
                 'email' => [
                     'required',
                     'email',
-                    Rule::exists('users', 'email')->where('type', 'frontend'),
+                    Rule::exists('users', 'email')->where('type', 'client'),
                 ],
                 'password' => 'required|string|min:8|confirmed',
             ]);

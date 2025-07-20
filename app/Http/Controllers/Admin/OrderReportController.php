@@ -21,7 +21,7 @@ class OrderReportController extends Controller
                 'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
             ]);
         }
-        $users = User::where('type', 'frontend')->get();
+        $users = User::where('type', 'client')->get();
         return Inertia::render('Admin/Clients/Orders/Index', [
             'user' => null,
             'users' => fn () => $users,
@@ -53,18 +53,18 @@ class OrderReportController extends Controller
                 if($order->car->orders->count() > 1 && $order->car->status === "booked") {
                     $order->delete();
                     return to_route('orders.index');
-                } 
+                }
                 if($order->car->orders->count() === 1 && $order->car->status === "booked") {
                     $car_status = "booked";
                 }
                 if($order->car->orders->count() === 1 && $order->car->status === "available") {
                     $car_status = "available";
                     $order->delete();
-                } 
+                }
                 if($order->car->orders->count() === 1 && $order->car->status === "requesting") {
                     $car_status = "available";
                     $order->delete();
-                } 
+                }
                 $order->car->update(['status' => $car_status]);
             } else {
                 $order->delete();
@@ -76,14 +76,14 @@ class OrderReportController extends Controller
         }
 
         $order->update(['status' => $order_status]);
-        
+
         if($order_status === "approved") {
             $car_status = "booked";
         }
         if($order->car) {
             $order->car->update(['status' => $car_status]);
         }
-        
+
         return to_route('orders.index');
     }
 
@@ -95,7 +95,7 @@ class OrderReportController extends Controller
                 'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
             ]);
         }
-        $users = User::where('type', 'frontend')->get();
+        $users = User::where('type', 'client')->get();
         return Inertia::render('Admin/Clients/Orders/Index', [
             'user' => fn () => $user,
             'users' => fn () => $users,

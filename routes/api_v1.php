@@ -83,7 +83,7 @@ Route::middleware(['auth:api'])->group(function () {
 });
 
 # frontend routes
-Route::prefix('categories')
+Route::middleware(['auth:api'])->prefix('categories')
     ->group(function () {
         Route::get('', [CategoryController::class, 'index']);
         Route::post('/store', [CategoryController::class, 'store']);
@@ -92,7 +92,7 @@ Route::prefix('categories')
         Route::delete('/{category}/delete', [CategoryController::class, 'destroy']);
 
 });
-Route::prefix('units')
+Route::middleware(['auth:api'])->prefix('units')
     ->group(function () {
         Route::get('', [UnitController::class, 'index']);
         Route::post('/store', [UnitController::class, 'store']);
@@ -102,18 +102,29 @@ Route::prefix('units')
 
 });
 
-Route::apiResource('customers', CustomerController::class);
+
 
 Route::middleware(['auth:api'])->group(function () {
-    Route::apiResource('products', ProductController::class);
+    // Route::apiResource('products', ProductController::class);
+    Route::apiResource('customers', CustomerController::class);
+
+
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+
+    // POST /ftd/api/v1/products → create a product
+    Route::post('products', [ProductController::class, 'store'])->name('products.store');
+
+    // GET /ftd/api/v1/products/{product} → get one product
+    Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+
+    // PUT or PATCH /ftd/api/v1/products/{product} → update product
+    Route::post('products/{product}', [ProductController::class, 'update'])->name('products.update');
+
+    // DELETE /ftd/api/v1/products/{product} → delete product
+    Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 });
 
 Route::prefix('')->group(function () {
-    Route::get('/categories', [UnitController::class, 'index']);
-    Route::get('/categories/{category}', [CategoryController::class, 'getCategoryById']);
-    Route::get('/categories/{slug}/get-slug', [CategoryController::class, 'getCategoryBySlug']);
-
-
 
 
     Route::get('/brands', [BrandController::class, 'index']);

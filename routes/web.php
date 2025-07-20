@@ -355,8 +355,8 @@ Route::get('/assets/country/{code}/flags', function (Request $req, $code) {
 
 Route::get('/link', function() {
 
-    $storagePath = "/home1/obbivemy/admin_reachautoimport_files/storage/app/public";
-    $linkPath = "/home1/obbivemy/admin.reachautoimport/storage";
+    $storagePath = "/home1/obbivemy/ftdev_files/storage/app/public";
+    $linkPath = "/home1/obbivemy/ftdevs/storage";
 
     // Check if the link already exists
     if (file_exists($linkPath)) {

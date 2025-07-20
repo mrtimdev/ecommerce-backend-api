@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $cars = Car::all();
         $ordes = CustomerOrder::all();
         $users = User::where('type', '=', 'backend')->get();
-        $user_register = User::where('type', '=', 'frontend')->get();
+        $user_register = User::where('type', '=', 'client')->get();
         return inertia('Admin/Dashboard/Index', [
             'total_car' => fn() => $cars->count(),
             'total_order' => fn() => $ordes->count(),

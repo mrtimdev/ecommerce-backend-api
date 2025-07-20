@@ -45,8 +45,8 @@ class UserLoginRequest extends FormRequest
         $password = $this->input('password');
         $fieldType = filter_var($identify, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        $user = User::where($fieldType, $identify)->where("type", "=", "frontend")->first();
-        
+        $user = User::where($fieldType, $identify)->where("type", "=", "client")->first();
+
         if (!$user) {
             RateLimiter::hit($this->throttleKey());
             $errorMessage = $fieldType === 'email' ? 'We couldn’t find an account with that email. Please check and try again.' : 'We couldn’t find an account with that username. Please check and try again.';
@@ -59,7 +59,7 @@ class UserLoginRequest extends FormRequest
         if (!$user->email_verified_at) {
             throw ValidationException::withMessages(['identify' => 'Email not verified.']);
         }
-        if (!$user->isFrontend()) {
+        if (!$user->isClient()) {
             throw ValidationException::withMessages(['identify' => "We couldn’t find an account with that $fieldType."]);
         }
         // Check password

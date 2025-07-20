@@ -9,33 +9,22 @@ class StockMove extends Model
 {
     use HasFactory;
 
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
+        'date',
         'product_id',
         'stock_id',
+        'client_id',
+        'user_id',
         'quantity',
         'unit_id',
         'price',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'quantity' => 'integer',
         'price' => 'decimal:2',
     ];
 
-    /**
-     * Get the product that the stock move belongs to.
-     */
     public function product()
     {
         return $this->belongsTo(Product::class);

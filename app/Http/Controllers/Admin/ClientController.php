@@ -28,7 +28,7 @@ class ClientController extends Controller
     public function getClientsList(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::where('id', '!=', auth()->id())->where('type', '=', 'frontend')->whereNotNull('email_verified_at')->orderBy('id', 'desc')->get();
+            $data = User::where('id', '!=', auth()->id())->where('type', '=', 'client')->whereNotNull('email_verified_at')->orderBy('id', 'desc')->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->make(true);
@@ -54,13 +54,13 @@ class ClientController extends Controller
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email')->where('type', 'frontend'),
+                Rule::unique('users', 'email')->where('type', 'client'),
             ],
             'username' => [
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('users', 'username')->where('type', 'frontend'),
+                Rule::unique('users', 'username')->where('type', 'client'),
                 'regex:/^[a-z0-9_]+$/'
             ],
             'phone' => 'required|string|max:20',
@@ -84,7 +84,7 @@ class ClientController extends Controller
             'username' => $request->username,
             'email' => $request->email,
             'phone' => $request->phone,
-            'type' => "frontend",
+            'type' => "client",
             'is_active' => $request->is_active,
             'password' => Hash::make($request->password),
             'is_created_by_owner' => true,
@@ -114,13 +114,13 @@ class ClientController extends Controller
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email')->where('type', 'frontend')->ignore($user->id),
+                Rule::unique('users', 'email')->where('type', 'client')->ignore($user->id),
             ],
             'username' => [
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('users', 'username')->where('type', 'frontend')->ignore($user->id),
+                Rule::unique('users', 'username')->where('type', 'client')->ignore($user->id),
                 'regex:/^[a-z0-9_]+$/'
             ],
             'phone' => 'required|string|max:20',
@@ -189,7 +189,7 @@ class ClientController extends Controller
                 'message' => "<b>Access Denied:</b> You do not have the required permissions to access this feature."
             ]);
         }
-        $users = User::where('type', 'frontend')->get();
+        $users = User::where('type', 'client')->get();
         return inertia('Admin/Clients/Cars/Liked', [
             'user' => $user?->id ? $user : null,
             'users' => fn () => $users,

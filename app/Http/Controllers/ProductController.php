@@ -13,7 +13,7 @@ class ProductController extends Controller
     public function __construct()
     {
         // ensure every method requires a valid Sanctum token
-        $this->middleware('auth:sanctum');
+        // $this->middleware('auth:sanctum');
     }
     public function index()
     {

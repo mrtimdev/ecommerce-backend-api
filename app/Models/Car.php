@@ -184,7 +184,7 @@ class Car extends EloquentModel implements Auditable
 
     public function client()
     {
-        return $this->belongsTo(User::class, 'client_id', 'id')->where('type', 'frontend');
+        return $this->belongsTo(User::class, 'client_id', 'id')->where('type', 'client');
     }
 
     public function getCarOptionsByGroup()

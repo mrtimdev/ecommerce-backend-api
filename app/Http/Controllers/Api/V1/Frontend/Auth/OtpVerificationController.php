@@ -22,12 +22,12 @@ class OtpVerificationController extends Controller
     public function registerVerifyCode(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email,type,frontend',
+            'email' => 'required|email|exists:users,email,type,client',
             'otp' => 'required|integer',
         ]);
 
         // Find the user by email
-        $user = User::where('email', $request->email)->where('type', 'frontend')->first();
+        $user = User::where('email', $request->email)->where('type', 'client')->first();
 
         if (!$user) {
             return response()->json(['status' => 'fail', 'message' => 'User not found.'], 404);
@@ -53,12 +53,12 @@ class OtpVerificationController extends Controller
     public function newPasswordVerifyCode(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email,type,frontend',
+            'email' => 'required|email|exists:users,email,type,client',
             'otp' => 'required|integer',
         ]);
 
         // Find the user by email
-        $user = User::where('email', $request->email)->where('type', 'frontend')->first();
+        $user = User::where('email', $request->email)->where('type', 'client')->first();
 
         if (!$user) {
             return response()->json(['status' => 'fail', 'message' => 'User not found.'], 404);
@@ -75,7 +75,7 @@ class OtpVerificationController extends Controller
         // Mark email as verified
         $user->update([
             'password_verified_at' => Carbon::now(),
-            'otp' => null, 
+            'otp' => null,
             'otp_expired' => null,
         ]);
 
@@ -84,12 +84,12 @@ class OtpVerificationController extends Controller
     public function newEmailVerifyCode(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,new_email,type,frontend',
+            'email' => 'required|email|exists:users,new_email,type,client',
             'otp' => 'required|integer',
         ]);
 
         // Find the user by email
-        $user = User::where('new_email', $request->email)->where('type', 'frontend')->first();
+        $user = User::where('new_email', $request->email)->where('type', 'client')->first();
 
         if (!$user) {
             return response()->json(['status' => 'fail', 'message' => 'User not found.'], 404);
@@ -109,25 +109,25 @@ class OtpVerificationController extends Controller
             'email' => $user->new_email,
             'new_email' => null,
             'is_new_email' => false,
-            'otp' => null, 
+            'otp' => null,
             'otp_expired' => null,
         ]);
 
         return response()->json(['status' => 'success', 'message' => 'Email verified successfully.']);
     }
-    
+
 
     public function resendCode(Request $request)
     {
-        
+
         $request->validate([
-            'email' => 'required|email|exists:users,email,type,frontend',
+            'email' => 'required|email|exists:users,email,type,client',
         ]);
 
-        $user = User::where('email', $request->email)->where('type', 'frontend')->first(); 
+        $user = User::where('email', $request->email)->where('type', 'client')->first();
         sendOtpEmail($user);
         return response()->json([
-            'status' => 'success', 
+            'status' => 'success',
             'message' => 'Verification code was sent to your email address.',
         ], 200);
     }
@@ -135,15 +135,15 @@ class OtpVerificationController extends Controller
     public function resendCodeForNewEmail(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,new_email,type,frontend',
+            'email' => 'required|email|exists:users,new_email,type,client',
         ]);
 
-        $user = User::where('new_email', $request->email)->where('type', 'frontend')->first();
+        $user = User::where('new_email', $request->email)->where('type', 'client')->first();
         sendOtpEmail($user, true);
         return response()->json([
-            'status' => 'success', 
+            'status' => 'success',
             'message' => 'Verification code was sent to your email address.',
         ], 200);
     }
-    
+
 }

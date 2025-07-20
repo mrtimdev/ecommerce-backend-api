@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('username')->unique()->nullable();
             $table->string('mobile_no')->nullable();
             $table->boolean('terms')->default(false);
-            $table->enum('type', ['backend', 'frontend'])->default('backend');
+            $table->enum('type', ['backend', 'client'])->default('backend');
         });
     }
 

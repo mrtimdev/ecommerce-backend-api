@@ -6,6 +6,7 @@ use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\CustomerResource;
 
 class CustomerController extends Controller
@@ -17,13 +18,27 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::guard('api')->user();
         $validated = $request->validate([
-            'client_id' => 'required|exists:users,id',
             'name'      => 'required|string|max:255',
-            'email'     => 'required|email|unique:customers,email',
-            'phone'     => 'nullable|string|max:20|unique:customers,phone',
+            'email'     => [
+                'required',
+                'email',
+                Rule::unique('customers')->where(fn($q) =>
+                    $q->where('client_id', $user->id)
+                ),
+            ],
+            'phone'     => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('customers')->where(fn($q) =>
+                    $q->where('client_id', $user->id)
+                ),
+            ],
             'address'   => 'nullable|string',
         ]);
+        $validated['client_id'] = $user->id;
 
         $customer = Customer::create($validated);
 
@@ -37,23 +52,25 @@ class CustomerController extends Controller
 
     public function update(Request $request, Customer $customer)
     {
+        $user = Auth::guard('api')->user();
+
         $validated = $request->validate([
-            'client_id' => 'sometimes|exists:users,id',
-            'name'      => 'sometimes|string|max:255',
-            'email'     => [
-                'sometimes',
+            'name'    => 'required|string|max:255',
+            'email'   => [
+                'required',
                 'email',
-                Rule::unique('customers', 'email')->ignore($customer->id),
+                    Rule::unique('customers')->ignore($customer->id)
+                    ->where(fn($q) => $q->where('client_id', $user->id)),
             ],
-            'phone' => [
+            'phone'   => [
                 'nullable',
                 'string',
                 'max:20',
-                Rule::unique('customers', 'phone')->ignore($customer->id),
+                Rule::unique('customers')->ignore($customer->id)
+                    ->where(fn($q) => $q->where('client_id', $user->id)),
             ],
-            'address'   => 'nullable|string|max:500',
+            'address' => 'nullable|string',
         ]);
-
 
         $customer->update($validated);
 
