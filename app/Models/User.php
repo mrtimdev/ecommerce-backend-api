@@ -84,6 +84,11 @@ class User extends Authenticatable implements LaratrustUser #, MustVerifyEmail
         return $this->type === 'driver';
     }
 
+    public function packages()
+    {
+        return $this->hasMany(Package::class, 'client_id');
+    }
+
     public function cars()
     {
         return $this->hasMany(Car::class);

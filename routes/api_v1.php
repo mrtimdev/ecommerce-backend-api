@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Frontend\UserController;
 use App\Http\Controllers\Api\V1\Frontend\BrandController;
 use App\Http\Controllers\Api\V1\Frontend\ColorController;
 use App\Http\Controllers\Api\V1\Frontend\ModelController;
+use App\Http\Controllers\Api\V1\Frontend\PackageController;
 use App\Http\Controllers\Api\V1\Frontend\ProductController;
 use App\Http\Controllers\Api\V1\Frontend\SettingController;
 use App\Http\Controllers\Api\V1\Frontend\CategoryController;
@@ -122,6 +123,13 @@ Route::middleware(['auth:api'])->group(function () {
 
     // DELETE /ftd/api/v1/products/{product} → delete product
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+    // packages for clients
+    Route::get('/packages', [PackageController::class, 'index']);             // List all packages for the authenticated client
+    Route::post('/packages', [PackageController::class, 'store']);            // Create a new package
+    Route::get('/packages/{package}', [PackageController::class, 'show']);    // Show single package
+    Route::post('/packages/{package}', [PackageController::class, 'update']);  // Update existing package
+    Route::delete('/packages/{package}', [PackageController::class, 'destroy']); // Delete package
 });
 
 Route::prefix('')->group(function () {
