@@ -125,6 +125,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::delete('products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
 
     // packages for clients
+    Route::get('/packages/load/products', [PackageController::class, 'loadProducts']);             // List all packages for the authenticated client
     Route::get('/packages', [PackageController::class, 'index']);             // List all packages for the authenticated client
     Route::post('/packages', [PackageController::class, 'store']);            // Create a new package
     Route::get('/packages/{package}', [PackageController::class, 'show']);    // Show single package

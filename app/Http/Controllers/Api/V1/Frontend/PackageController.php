@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Resources\PackageResource;
+use App\Http\Resources\PartialProductResource;
 
 class PackageController extends Controller
 {
@@ -24,6 +25,41 @@ class PackageController extends Controller
             ->paginate(15);
         return PackageResource::collection($packages);
     }
+
+    public function loadProducts(Request $request)
+    {
+        $client = Auth::guard('api')->user();
+
+        $query = Product::with(['category', 'unit', 'images'])
+            ->where('client_id', $client->id);
+
+        // Optional: filter by is_active
+        if ($request->has('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        // Optional: global search filter
+        if ($request->filled('filter')) {
+            $search = $request->filter;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                ->orWhere('name', 'like', "%{$search}%")
+                ->orWhereHas('category', function ($category) use ($search) {
+                    $category->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('unit', function ($unit) use ($search) {
+                    $unit->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $products = $query->get();
+
+        return PartialProductResource::collection($products);
+    }
+
+
 
     public function show($id)
     {

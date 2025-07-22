@@ -28,7 +28,7 @@ class ClientController extends Controller
     public function getClientsList(Request $request)
     {
         if ($request->ajax()) {
-            $data = User::where('id', '!=', auth()->id())->where('type', '=', 'client')->whereNotNull('email_verified_at')->orderBy('id', 'desc')->get();
+            $data = User::where('type', '=', 'client')->whereNotNull('email_verified_at')->orderBy('id', 'desc')->get();
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->make(true);

@@ -44,7 +44,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::resource('stocks', StockController::class);
     Route::resource('deliveries', DeliveryController::class);
-    Route::resource('clients', ClientController::class);
+    // Route::resource('clients', ClientController::class);
 
     // Additional custom routes
     Route::get('/clients/{client}/stocks', [ClientController::class, 'stocks'])->name('clients.stocks');

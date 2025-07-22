@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\ProductResource;
 use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
@@ -16,11 +17,37 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $user = Auth::guard('api')->user();
-        return Product::with(['images','category', 'unit'])
-            ->where('client_id', $user->id)
-            ->latest()
-            ->paginate(10);
+
+        $query = Product::with(['category', 'unit', 'images'])
+            ->where('client_id', $user->id);
+
+        // Filter by is_active (true/false)
+        if ($request->has('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        // Global filter: search in code, name, and category name
+        if ($request->filled('filter')) {
+            $search = $request->filter;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                ->orWhere('name', 'like', "%{$search}%")
+                ->orWhereHas('category', function ($category) use ($search) {
+                    $category->where('name', 'like', "%{$search}%");
+                })
+                ->orWhereHas('unit', function ($unit) use ($search) {
+                    $unit->where('name', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        $products = $query->latest()->paginate(10);
+
+        return ProductResource::collection($products);
     }
+
+
 
     public function store(Request $request)
     {
@@ -59,9 +86,15 @@ class ProductController extends Controller
         return response()->json($product, 201);
     }
 
-    public function show(Product $product)
+    public function show($id)
     {
-        return $product->load(['category', 'unit']);
+        $user = Auth::guard('api')->user();
+
+        $product = Product::with(['category', 'unit', 'images'])
+            ->where('client_id', $user->id)
+            ->findOrFail($id);
+
+        return new ProductResource($product);
     }
 
     public function update(Request $request, Product $product)
