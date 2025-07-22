@@ -39,6 +39,23 @@ const menuGroups = ref([
               label: "Dashboard",
               routeName: "dashboard",
             },
+
+            {
+              icon: `<i class="mt-[5px] fi fi-ts-workflow-setting-alt"></i>`,
+              label: "Reprts",
+              is_in_route: route().current("reports.*") ? true : false,
+              children: [
+                ...(isRole("owner") || isRole("admin")
+                  ? [
+                      {
+                        icon: `<i class="fa-sharp fa-circle-dot"></i>`,
+                        label: "User Cars",
+                        routeName: "reports.users.cars",
+                      },
+                    ]
+                  : []),
+              ],
+            },
           ]
         : []),
       ...(isRole("owner") || isRole("admin") || isPermission(["cars-specifications"])

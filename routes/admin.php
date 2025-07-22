@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\OrderReportController;
@@ -27,6 +28,9 @@ Route::group(['prefix' => 'reports'], function () {
     Route::get('/orders/{user}/list', [OrderReportController::class, 'getOrdersListByUser'])->name('orders.user.list');
 
     Route::get('/orders/monthly-report', [OrderReportController::class, 'monthlyOrderReport'])->name('order.monthly.report');
+
+    // users
+    Route::get('/users/cars', [ReportController::class, 'index'])->name('reports.users.cars');
 });
 Route::prefix('users')->name('users.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');

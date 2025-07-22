@@ -156,6 +156,13 @@ export default function useHelper() {
         }
     }
 
+    const formatDate_ = (dateString) => {
+        if (!dateString) return '';
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
+
 
     const formatNumber = (number) => {
         return new Intl.NumberFormat('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(number);
@@ -174,6 +181,7 @@ export default function useHelper() {
         countryFormat,
         countryFlagFormat,
         formatDate,
+        formatDate_,
         formatNumber
     }
 }

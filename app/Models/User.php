@@ -18,7 +18,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class User extends Authenticatable implements LaratrustUser #, MustVerifyEmail
 {
     use HasFactory, Notifiable, HasApiTokens, HasRolesAndPermissions;
-    
+
     protected $fillable = [
         'name', 'first_name', 'last_name', 'email', 'password', 'username', 'phone', 'type', 'terms', 'telegram_link', 'facebook_link', 'whatapp_link', 'is_active', 'phone_verified_at', 'email_verified_at', 'password_verified_at', 'avatar', 'otp', 'otp_expired', 'is_new_email', 'new_email', 'is_created_by_owner', 'dob', 'gender', 'company', 'address', 'cover', 'email_2',
     ];
@@ -59,7 +59,7 @@ class User extends Authenticatable implements LaratrustUser #, MustVerifyEmail
         }
     }
 
-    
+
     public function getAvatarFullPathAttribute()
     {
         return $this->avatar ? asset('storage/' . $this->avatar) : asset('assets/images/user/no-avatar.png');
@@ -78,9 +78,13 @@ class User extends Authenticatable implements LaratrustUser #, MustVerifyEmail
         return $this->type === 'frontend';
     }
 
+    // public function cars()
+    // {
+    //     return $this->hasMany(Car::class);
+    // }
     public function cars()
     {
-        return $this->hasMany(Car::class);
+        return $this->hasMany(Car::class, 'created_by', 'id');
     }
     public function car()
     {
