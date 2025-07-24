@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientController;
+use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Auth\ProfileController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\OrderReportController;
@@ -52,6 +53,17 @@ Route::prefix('clients')->name('clients.')->group(function () {
 
     Route::get('/likes/{user?}', [ClientController::class, 'itemsLiked'])->name('items.like');
     Route::get('/liked/list/{user?}', [ClientController::class, 'getItemsLikedList'])->name('items.like.list');
+});
+
+Route::prefix('drivers')->name('drivers.')->group(function () {
+    Route::get('/', [DriverController::class, 'index'])->name('index');
+    Route::get('/list', [DriverController::class, 'getDriversList'])->name('list');
+    Route::get('/create', [DriverController::class, 'create'])->name('create');
+    Route::post('/store', [DriverController::class, 'store'])->name('store');
+    Route::get('/{driver}/edit', [DriverController::class, 'edit'])->name('edit');
+    Route::post('/{driver}/update', [DriverController::class, 'update'])->name('update');
+    Route::post('/avatar/{driver}/update', [DriverController::class, 'update_avatar'])->name('update-avatar');
+    Route::post('/delete-selected', [DriverController::class, 'deleteSelected'])->name('destroy.selected');
 });
 
 Route::prefix('roles')->name('roles.')->group(function () {

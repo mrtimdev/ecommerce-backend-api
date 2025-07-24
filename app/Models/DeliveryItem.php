@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class PackageItem extends Model
+class DeliveryItem extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'package_id',
+        'delivery_id',
         'product_id',
         'unit_id',
         'quantity',
@@ -20,9 +20,9 @@ class PackageItem extends Model
         'note',
     ];
 
-    public function package()
+    public function delivery()
     {
-        return $this->belongsTo(Package::class);
+        return $this->belongsTo(Delivery::class);
     }
 
     public function product()

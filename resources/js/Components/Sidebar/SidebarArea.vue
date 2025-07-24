@@ -121,8 +121,8 @@ const menuGroups = ref([
             {
               icon: `<i class="mt-[5px] fi fi-rr-users"></i>`,
               label: "Drivers",
-              routeName: "clients.index",
-              is_in_route: route().current("clients.*") ? true : false,
+              routeName: "drivers.index",
+              is_in_route: route().current("drivers.*") ? true : false,
             },
             {
               icon: `<i class="mt-[5px] fi fi-tr-plan"></i>`,
