@@ -25,6 +25,9 @@ import 'sweetalert2/dist/sweetalert2.min.css';
 // import '@sweetalert2/themes/dark/dark.scss'
 // import '@sweetalert2/themes/borderless/borderless.scss'
 
+import PrimeVue from 'primevue/config';
+import Aura from '@primeuix/themes/aura';
+
 const options = {
   confirmButtonColor: "#7e22ce",
   cancelButtonColor: "#be123c",
@@ -78,7 +81,12 @@ createInertiaApp({
           .component('InputError', InputError)
           .component('LoadingIcon', LoadingIcon)
           .component('MultiSelect', VueMultiselect)
-          
+          .use(PrimeVue, {
+            theme: {
+                preset: Aura
+            }
+          })
+
           .mount(el);
     },
     progress: {

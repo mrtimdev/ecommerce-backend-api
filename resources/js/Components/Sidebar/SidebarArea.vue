@@ -102,9 +102,9 @@ const menuGroups = ref([
             },
             {
               icon: `<i class="mt-[5px] fi fi-rr-user-gear"></i>`,
-              label: "Stocks",
-              routeName: "stocks.index",
-              is_in_route: route().current("stocks.*") ? true : false,
+              label: "Receives",
+              routeName: "receives.index",
+              is_in_route: route().current("receives.*") ? true : false,
             },
             {
               icon: `<i class="mt-[5px] fi fi-rr-user-gear"></i>`,

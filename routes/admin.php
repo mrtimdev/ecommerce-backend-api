@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Auth\ProfileController;
+use App\Http\Controllers\Admin\ReceiveController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\OrderReportController;
 
@@ -65,6 +66,24 @@ Route::prefix('drivers')->name('drivers.')->group(function () {
     Route::post('/avatar/{driver}/update', [DriverController::class, 'update_avatar'])->name('update-avatar');
     Route::post('/delete-selected', [DriverController::class, 'deleteSelected'])->name('destroy.selected');
 });
+
+
+// Receive routes
+Route::prefix('receives')->name('receives.')->group(function () {
+    Route::get('/', [ReceiveController::class, 'index'])->name('index');
+    Route::get('/create', [ReceiveController::class, 'create'])->name('create');
+    Route::post('/', [ReceiveController::class, 'store'])->name('store');
+    Route::get('/{receive}', [ReceiveController::class, 'show'])->name('show');
+    Route::get('/{receive}/edit', [ReceiveController::class, 'edit'])->name('edit');
+    Route::put('/{receive}', [ReceiveController::class, 'update'])->name('update');
+    Route::delete('/{receive}', [ReceiveController::class, 'destroy'])->name('destroy');
+
+    // 📦 Load packages by client (AJAX)
+
+});
+
+Route::get('/packages/by-client/{client}', [ReceiveController::class, 'getClientPackages'])->name('packages.by-client');
+Route::get('/packages/{package}/items', [ReceiveController::class, 'getPackageItems'])->name('packages.items.suggession');
 
 Route::prefix('roles')->name('roles.')->group(function () {
     Route::get('/list', [RoleController::class, 'getRolesList'])->name('list');

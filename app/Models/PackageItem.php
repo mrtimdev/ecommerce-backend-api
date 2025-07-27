@@ -33,7 +33,7 @@ class PackageItem extends Model
 
     public function receiveItems()
     {
-        return $this->hasMany(ReceiveItem::class);
+        return $this->hasMany(ReceiveItem::class, 'package_item_id');
     }
 
     // Accessor: total quantity received so far
@@ -41,6 +41,12 @@ class PackageItem extends Model
     {
         return $this->receiveItems()->sum('quantity');
     }
+
+    // public function getRemainingQuantityAttribute()
+    // {
+    //     return $this->quantity - $this->receiveItems()->sum('quantity');
+    // }
+
 
     // Accessor: balance quantity left to receive
     public function getBalanceQuantityAttribute()

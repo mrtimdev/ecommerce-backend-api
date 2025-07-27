@@ -24,7 +24,7 @@ import ToasterWrapper from "@/Components/Others/Toaster/ToasterNotifications.vue
       <!-- ===== Main Content Start ===== -->
       <main>
         <div
-          class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10 bg-gray-200 dark:bg-[#1a2035]"
+          class="mx-auto p-4 md:p-6 2xl:p-10 bg-gray-200 dark:bg-[#1a2035]"
         >
           <div class="content dark:bg-boxdark-1 bg-white">
             <slot></slot>

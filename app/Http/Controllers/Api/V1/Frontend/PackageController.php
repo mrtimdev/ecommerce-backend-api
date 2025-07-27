@@ -213,4 +213,29 @@ class PackageController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Package deleted successfully']);
     }
+
+    public function getByClient(Request $request, $clientId)
+    {
+        $search = $request->query('query');
+
+        $packages = Package::where('client_id', $clientId)
+            ->when($search, function($query) use ($search) {
+                $query->where(function($q) use ($search) {
+                    $q->where('reference_no', 'like', "%{$search}%")
+                    ->orWhere('date', 'like', "%{$search}%")
+                    ->orWhereRaw("CONCAT(reference_no, ' ', date, ' ') LIKE ? ", ["%{$search}%"]);
+                });
+            })
+            ->limit(10)
+            ->get(['id', 'reference_no', 'date',]);
+
+        return response()->json(
+            $packages->map(function($package) {
+                return [
+                    'id' => $package->id,
+                    'name' => "#{$package->reference_no} - ({$package->date})"
+                ];
+            })
+        );
+    }
 }

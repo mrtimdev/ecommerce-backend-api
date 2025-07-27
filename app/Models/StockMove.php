@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\User as Client;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class StockMove extends Model
 {
@@ -12,37 +15,36 @@ class StockMove extends Model
     protected $fillable = [
         'date',
         'product_id',
+        'package_id',
+        'delivery_id',
         'stock_id',
         'client_id',
         'user_id',
         'quantity',
         'unit_id',
         'price',
+        'type', // 'in' or 'out'
+        'move_type',
+        'owner_type',
     ];
 
-    protected $casts = [
-        'quantity' => 'integer',
-        'price' => 'decimal:2',
-    ];
-
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    /**
-     * Get the stock transaction that initiated this move.
-     */
-    public function stock()
+    public function stock(): BelongsTo
     {
         return $this->belongsTo(Stock::class);
     }
 
-    /**
-     * Get the unit associated with the stock move.
-     */
-    public function unit()
+    public function client(): BelongsTo
     {
-        return $this->belongsTo(Unit::class); // Assuming a Unit model
+        return $this->belongsTo(Client::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

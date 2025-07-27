@@ -7,43 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 class Stock extends Model
 {
     protected $fillable = [
-        'client_id', 'quantity', 'total_price',
-        'discount', 'payment_status', 'date', 'note', 'total_amount',
-        'paid_amount',
+        'product_id',
+        'owner_type',
+        'owner_id',
+        'unit_id',
+        'quantity',
     ];
 
-    protected $casts = [
-        'total_amount' => 'decimal:2',
-        'paid_amount' => 'decimal:2', // Cast paid_amount to decimal
-        'date' => 'date', // Ensure date is cast properly
-        // Removed 'ftd_payments' cast
-    ];
-
-    public function client()
-    {
-        return $this->belongsTo(Client::class);
-    }
-
-    public function product()
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function items()
+    public function unit(): BelongsTo
     {
-        return $this->hasMany(StockItem::class); // Or StockProduct::class, etc.
+        return $this->belongsTo(Unit::class);
     }
 
-    public function payments()
+    public function owner()
     {
-        return $this->hasMany(Payment::class);
-    }
-
-    /**
-     * Calculate the remaining due amount for this stock.
-     */
-    public function getDueAmountAttribute()
-    {
-        return $this->total_amount - $this->paid_amount;
+        return $this->morphTo(__FUNCTION__, 'owner_type', 'owner_id');
     }
 }

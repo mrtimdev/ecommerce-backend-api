@@ -132,6 +132,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/packages/{package}', [PackageController::class, 'update']);  // Update existing package
     Route::delete('/packages/{package}', [PackageController::class, 'destroy']); // Delete package
 });
+Route::get('/packages/by-client/{client}', [PackageController::class, 'getByClient']);
+// Route::get('packages/{package}/items', [PackageController::class, 'getPackageItems']);
 
 Route::prefix('')->group(function () {
 
