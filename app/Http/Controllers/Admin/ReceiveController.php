@@ -74,6 +74,8 @@ class ReceiveController extends Controller
             $receivedQty = $item->receiveItems->sum('quantity');
             $item->balance_quantity = $item->quantity - $receivedQty;
             $item->status = $this->calculateItemStatus($item->quantity, $receivedQty);
+            $item->product = $item->product; 
+            $item->unit = $item->product->unit;
             return $item;
         })->filter(function ($item) {
             return $item->balance_quantity > 0;
@@ -108,7 +110,7 @@ class ReceiveController extends Controller
             'date' => 'required|date',
             'note' => 'nullable|string',
             'items' => 'required|array',
-            'items.*.package_item_id' => 'required|exists:package_items,id',
+            'items.*.id' => 'required|exists:package_items,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -122,7 +124,7 @@ class ReceiveController extends Controller
             ]);
 
             foreach ($request->items as $item) {
-                $packageItem = PackageItem::find($item['package_item_id']);
+                $packageItem = PackageItem::find($item['id']);
 
                 // 1. Save receive item
                 $receiveItem = ReceiveItem::create([

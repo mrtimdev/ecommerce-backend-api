@@ -84,7 +84,7 @@
 
 
                   <div class="relative">
-                    <Select fluid v-model="selectedClient" variant="filled" @update:modelValue="test" showClear :options="clients" filter optionLabel="name" placeholder="Select a Client" class="w-full md:w-56">
+                    <Select fluid v-model="selectedClient" showClear :options="clients" filter optionLabel="name" placeholder="Select a Client" class="w-full md:w-56">
                         <template #value="slotProps">
                             <div v-if="slotProps.value" class="flex items-center">
                                 <img :alt="slotProps.value.name" :src="slotProps.value.avatar_full_path" :class="`mr-2`" style="width: 18px" />
@@ -157,11 +157,17 @@
                           <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             {{ $t('product') }}
                           </th>
-                          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            {{ $t('unit_price') }}
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {{ $t('status') }}
                           </th>
-                          <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            {{ $t('subtotal') }}
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {{ $t('balance') }}
+                          </th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {{ $t('quantity_to_receive') }}
+                          </th>
+                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            {{ $t('actions') }}
                           </th>
                         </tr>
                       </thead>
@@ -182,23 +188,49 @@
                               </div>
                             </div>
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
-                            {{ item.unit_price }}
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <span :class="statusBadgeClass(item.status)">
+                                {{ item.status }}
+                        </span>
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
-                            {{ item.subtotal }}
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {{ item.balance_quantity }}
                           </td>
-                          
-                        </tr>
-                        <tr class="bg-gray-50 dark:bg-gray-700">
-                          
-                          <td colspan="2" class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
-                            {{ $t('grand_total') }}
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="relative">
+                              <input
+                                type="number"
+                                min="0"
+                                :max="item.balance_quantity"
+                                step="0.01"
+                                v-model.number="form.items[index].quantity"
+                                @input="validateQuantity(index)"
+                                class="form-input w-32 dark:bg-gray-700 dark:text-white dark:border-gray-600 px-4 py-2 rounded-lg border focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition-all"
+                                :class="{
+                                  'border-red-300': quantityErrors[index],
+                                  'border-gray-300': !quantityErrors[index]
+                                }"
+                                placeholder="0"
+                              />
+                              <input
+                                type="hidden"
+                                v-model="form.items[index].package_item_id"
+                              />
+                              <div v-if="quantityErrors[index]" class="absolute -bottom-5 left-0 text-xs text-red-600 dark:text-red-400">
+                                {{ quantityErrors[index] }}
+                              </div>
+                            </div>
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
-                            {{ grand_total }}
+                          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              type="button"
+                              @click="removeItem(index)"
+                              class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
+                              :title="$t('remove_item')"
+                            >
+                              <i class="fi fi-rr-trash"></i>
+                            </button>
                           </td>
-                          
                         </tr>
                       </tbody>
                     </table>
@@ -277,7 +309,6 @@ const clientPackages = ref([])
 const packageItems = ref([]);
 const quantityErrors = ref({});
 const removedItems = ref([]);
-const grand_total = ref(0);
 
 
 const selectedPackage = ref(null);
@@ -367,33 +398,11 @@ const searchPackages = async (event) => {
   }
 };
 
-watch([() => selectedPackage.value, () => selectedClient.value], ([selectedPackage_, selectedClient_]) => {
-  form.client_id = selectedClient_ ? selectedClient_.id : "";
-  if(selectedPackage_) {
-    form.package_id = selectedPackage_.id;
-    loadPackageItems();
-  } else {
-    form.package_id = "";
-    packageItems.value = [];
-    form.items = [];
+watch([() => selectedPackage.value, () => selectedClient.value], ([selectedPackage_, selectedClient]) => {
+  form.client_id = selectedClient ? selectedClient.id : "";
+  console.log('Selected package:', selectedPackage_, selectedClient);
+})
 
-  }
-
-  console.log('Selected package:', selectedPackage_, selectedClient_);
-});
-
-const test = () => {
-  console.log('Selected client:', selectedClient.value);
-  if(!selectedClient.value) {
-    selectedPackage.value = null;
-    form.package_id = "";
-    packageItems.value = [];
-    form.items = [];
-    return;
-  }
-  // form.client_id = selectedClient.value ? selectedClient.value.id : "";
-  // loadClientPackages();
-}
 
 // watch(selectedPackage, async (newValue) => {
 //   if (newValue) {
@@ -439,8 +448,6 @@ const loadPackageItems = async () => {
             quantity: 0,
         }));
 
-        grand_total.value = packageItems.value.reduce((sum, item) => sum + Number(item.subtotal), 0);
-
         // packageItems.value = response.items.map(item => ({
         //     id: item.id,
         //     product_name: item.product?.name || 'N/A',
@@ -480,14 +487,23 @@ const resetItems = () => {
 
 // Prepare the form data for submission
 const prepareSubmitData = () => {
-  
+  const submitItems = [];
+
+  packageItems.value.forEach((item, index) => {
+    if (!removedItems.value.includes(index) && form.items[index].quantity > 0) {
+      submitItems.push({
+        package_item_id: item.id,
+        quantity: form.items[index].quantity
+      });
+    }
+  });
+
   return {
-    reference_no: form.reference_no,
     client_id: form.client_id,
     package_id: form.package_id,
     date: form.date,
     note: form.note,
-    items: packageItems.value
+    items: submitItems
   };
 };
 
